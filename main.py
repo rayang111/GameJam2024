@@ -143,6 +143,7 @@ guards = [Guard(x, y, direction) for x, y, _, direction in guardsMap1]
 
 # Initialize checkpoint state storage
 checkpoint_state = None
+checkpoint_used = False  # Variable to track if the checkpoint has already been used
 
 # Main game loop
 clock = pygame.time.Clock()
@@ -175,18 +176,20 @@ while running:
     if dx != 0 or dy != 0:
         result = player.move(dx, dy)
 
-        # si l'agent récupère le checkpoint l'état du jeu est sauvegardé
+        # Enregistrement de l'état du jeu au checkpoint
         if result == "checkpoint":
             checkpoint_state = {
                 "player_pos": (player.x, player.y),
                 "guards_pos": [(guard.x, guard.y) for guard in guards]
             }
+            checkpoint_used = False  # Reset the checkpoint usage flag
 
     # Restaurer l'état du jeu à l'appui de 'C'
-    if keys[pygame.K_c] and checkpoint_state is not None:
+    if keys[pygame.K_c] and checkpoint_state is not None and not checkpoint_used:
         player.x, player.y = checkpoint_state["player_pos"]
         for i, guard in enumerate(guards):
             guard.x, guard.y = checkpoint_state["guards_pos"][i]
+        checkpoint_used = True  # Mark the checkpoint as used
 
     # Move guards
     for guard in guards:
