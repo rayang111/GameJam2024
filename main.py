@@ -49,7 +49,7 @@ maze_matrix = np.array([
     [1,0,0,0,2,1,0,0,0,1,1,1,0,0,0,0,0,1,0,0,0,1,0,0,0,0,0,0,0,0,1,0,1,0,0,0,0,0,0,1],  # Checkpoint at position (2)
     [1,0,1,0,0,0,0,1,0,0,0,1,0,1,1,1,0,1,0,1,1,1,0,1,1,1,1,1,0,1,1,0,1,0,1,0,1,1,0,1],
     [1,0,1,1,0,0,0,1,1,1,0,1,0,0,0,1,0,1,0,0,0,0,0,1,0,0,0,1,0,0,0,0,1,0,1,0,0,1,0,1],
-    [1,0,1,0,0,1,0,0,0,1,0,1,0,1,0,1,0,1,1,1,1,0,1,1,0,1,0,1,0,1,1,1,1,0,1,1,1,1,0,1],
+    [1,3,1,0,0,1,0,0,0,1,0,1,0,1,0,1,0,1,1,1,1,0,1,1,0,1,0,1,0,1,1,1,1,0,1,1,1,1,0,1],
     [1,0,1,0,1,0,0,0,0,1,0,1,0,1,0,1,0,1,0,0,1,0,1,0,0,1,0,1,0,0,0,0,0,0,1,0,0,1,0,1],
     [1,0,1,1,1,1,1,1,0,1,0,1,1,1,0,1,0,1,0,1,1,0,1,0,1,1,0,1,1,1,1,1,0,0,1,0,1,1,0,1],
     [1,0,1,0,1,0,0,0,0,1,0,1,0,0,0,1,0,0,0,0,0,0,1,0,1,0,0,0,0,0,0,0,0,1,1,0,1,1,0,1],
@@ -134,6 +134,7 @@ class Player:
                     return "checkpoint"
                 elif maze_matrix[new_y, new_x] == 3:  # Bonus
                     maze_matrix[new_y, new_x] = 0
+                    return "bonus"
         return None
 
 # Guard class using A* for pathfinding
@@ -195,6 +196,8 @@ clock = pygame.time.Clock()
 running = True
 game_started = False  # Variable to track if the game has started or not
 game_over = False  # Variable to freeze the game when an enemy catches the player
+bonus_active = False
+bonus_start_time = 0
 
 def render_timer(screen, time_left):
     font = pygame.font.SysFont(None, 48)
@@ -220,8 +223,9 @@ while running:
             start_ticks = pygame.time.get_ticks()  # Reset timer when game starts
     elif not game_over:  # Only move and update if the game is not over
         # Timer countdown
-        seconds_elapsed = (pygame.time.get_ticks() - start_ticks) // 1000
-        time_left = max(0, time_limit - seconds_elapsed)  # Calculate time left
+        if not bonus_active:
+            seconds_elapsed = (pygame.time.get_ticks() - start_ticks) // 1000
+            time_left = max(0, time_limit - seconds_elapsed)  # Calculate time left
 
         # Handle player movement
         dx, dy = 0, 0
@@ -249,6 +253,11 @@ while running:
                 }
                 checkpoint_used = False  # Reset the checkpoint usage flag
 
+            # If the player collected a bonus, activate the bonus effect
+            if result == "bonus":
+                bonus_active = True
+                bonus_start_time = pygame.time.get_ticks()
+
         # If the player presses "C" and checkpoint is not yet used, restore the game state
         if keys[pygame.K_c] and checkpoint_state is not None and not checkpoint_used:
             player.x, player.y = checkpoint_state["player_pos"]
@@ -258,9 +267,16 @@ while running:
 
         # Move guards and check for collisions with the player
         for guard in guards:
-            guard.move(player, maze_matrix)
+            if not bonus_active:  # Guards only move if bonus is not active
+                guard.move(player, maze_matrix)
             if guard.check_collision(player):
                 game_over = True  # Freeze the game if a guard catches the player
+
+        # Deactivate the bonus after 10 seconds
+        if bonus_active and pygame.time.get_ticks() - bonus_start_time >= 10000:  # 10 seconds
+            bonus_active = False
+            # Resume the timer correctly after bonus ends
+            start_ticks += (pygame.time.get_ticks() - bonus_start_time)
 
         # Draw the maze
         screen.fill(backgroundColor)
@@ -300,7 +316,8 @@ while running:
                 screen.blit(guard1Down, (guard.x * CELL_SIZE, guard.y * CELL_SIZE))
 
         # Render the timer on the screen
-        render_timer(screen, time_left)
+        if not bonus_active:
+            render_timer(screen, time_left)
 
     # Update the display
     pygame.display.flip()
