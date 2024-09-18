@@ -91,9 +91,14 @@ class Player:
         new_x = self.x + dx * self.speed
         new_y = self.y + dy * self.speed
         if 0 <= new_x < MAZE_WIDTH and 0 <= new_y < MAZE_HEIGHT:
-            if maze_matrix[new_y, new_x] == 0:
+            if maze_matrix[new_y, new_x] == 0 or maze_matrix[new_y, new_x] in (2, 3):  # Walk on bonus or checkpoint
                 self.x = new_x
                 self.y = new_y
+
+                if maze_matrix[new_y, new_x] == 2:  # Checkpoint
+                    maze_matrix[new_y, new_x] = 0
+                elif maze_matrix[new_y, new_x] == 3:  # Bonus
+                    maze_matrix[new_y, new_x] = 0
 
 # Guard class
 class Guard:
