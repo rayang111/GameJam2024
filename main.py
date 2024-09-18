@@ -23,8 +23,8 @@ codeColor = (255, 255, 0)
 
 # Load assets images
 brick = pygame.image.load("data/brick.png")
-bonus = pygame.image.load("data/bonus.png")
-checkpoint = pygame.image.load("data/checkpoint.png")
+bonus = pygame.image.load("data/bonus.png")  # Image du bonus
+checkpoint = pygame.image.load("data/checkpoint.png")  # Image du checkpoint
 
 guard1Down = pygame.image.load("data/guard1.png")
 guard1Up = pygame.transform.rotate(guard1Down, 180)
@@ -43,7 +43,7 @@ pygame.display.set_caption("Labyrinth Game")
 # Define the maze matrix using NumPy
 maze_matrix = np.array([
     [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
-    [1,0,0,0,1,1,0,0,0,1,1,1,0,0,0,0,0,1,0,0,0,1,0,0,0,0,0,0,0,0,1,0,1,0,0,0,0,0,0,1],
+    [1,0,0,0,2,1,0,0,0,1,1,1,0,0,0,0,0,1,0,0,0,1,0,0,0,0,0,0,0,0,1,0,1,0,0,0,0,0,0,1],  # Checkpoint à cet emplacement (2)
     [1,0,1,0,0,0,0,1,0,0,0,1,0,1,1,1,0,1,0,1,1,1,0,1,1,1,1,1,0,1,1,0,1,0,1,0,1,1,0,1],
     [1,0,1,1,0,0,0,1,1,1,0,1,0,0,0,1,0,1,0,0,0,0,0,1,0,0,0,1,0,0,0,0,1,0,1,0,0,1,0,1],
     [1,0,1,0,0,1,0,0,0,1,0,1,0,1,0,1,0,1,1,1,1,0,1,1,0,1,0,1,0,1,1,1,1,0,1,1,1,1,0,1],
@@ -63,6 +63,10 @@ maze_matrix = np.array([
     [1,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,0,0,1,0,0,0,1,1,1,0,0,0,0,0,0,0,1,1,1],
     [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]
 ])
+
+# Place the bonus at a random 0 cell in the maze
+bonus_position = (7, 12)  # Example of a random position (7th row, 12th column)
+maze_matrix[bonus_position[0], bonus_position[1]] = 3  # Set the bonus value to 3
 
 # Resize or pad the matrix if necessary
 MAZE_HEIGHT, MAZE_WIDTH = maze_matrix.shape
@@ -173,10 +177,10 @@ while running:
             image_y = y * CELL_SIZE
             if maze_matrix[y, x] == 1:
                 screen.blit(brick, (image_x, image_y))
-            elif maze_matrix[y, x] == 2:
-                pygame.draw.rect(screen, checkPointColor, rect)
-            elif maze_matrix[y, x] == 3:
-                pygame.draw.rect(screen, codeColor, rect)
+            elif maze_matrix[y, x] == 2:  # Afficher l'item checkpoint à cet emplacement
+                screen.blit(checkpoint, (image_x, image_y))
+            elif maze_matrix[y, x] == 3:  # Afficher l'item bonus à cet emplacement
+                screen.blit(bonus, (image_x, image_y))
 
     # Draw the player
     if player.direction == "left":
@@ -192,7 +196,7 @@ while running:
     for guard in guards:
         if guard.direction == "left":
             screen.blit(guard1Left, (guard.x * CELL_SIZE, guard.y * CELL_SIZE))
-        elif guard.direction== "right":
+        elif guard.direction == "right":
             screen.blit(guard1Right, (guard.x * CELL_SIZE, guard.y * CELL_SIZE))
         elif guard.direction == "up":
             screen.blit(guard1Up, (guard.x * CELL_SIZE, guard.y * CELL_SIZE))
