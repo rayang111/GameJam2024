@@ -1,5 +1,6 @@
 import pygame
 import numpy as np
+import random
 
 # Initialize Pygame
 pygame.init()
@@ -13,71 +14,117 @@ GRID_WIDTH = SCREEN_WIDTH // CELL_SIZE  # 40 cells horizontally
 GRID_HEIGHT = SCREEN_HEIGHT // CELL_SIZE  # 20 cells vertically
 
 # Colors
-BLACK = (0, 0, 0)
-WHITE = (255, 255, 255)
-PLAYER_COLOR = (0, 255, 0)  # Green color for the player
+wallColor = (0, 0, 0)
+backgroundColor = (91, 113, 134)
+playerColor = (192, 192, 192)
+enemyColor = (255, 0, 0)
+checkPointColor = (0, 0, 255)
+codeColor = (255, 255, 0)
+
+# Load assets images
+brick = pygame.image.load("data/brick.png")
+bonus = pygame.image.load("data/bonus.png")
+
+guard1Down = pygame.image.load("data/guard1.png")
+guard1Up = pygame.transform.rotate(guard1Down, 180)
+guard1Left = pygame.transform.rotate(guard1Down, -90)
+guard1Right = pygame.transform.rotate(guard1Down, 90)
+
+spyDown = pygame.image.load("data/spy.png")
+spyUp = pygame.transform.rotate(spyDown, 180)
+spyLeft = pygame.transform.rotate(spyDown, -90)
+spyRight = pygame.transform.rotate(spyDown, 90)
 
 # Create the screen
 screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
 pygame.display.set_caption("Labyrinth Game")
 
 # Define the maze matrix using NumPy
-# 0 represents a path, 1 represents a wall
 maze_matrix = np.array([
     [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
-    [1,0,0,0,1,1,0,0,0,1,1,1,0,0,0,0,0,1,0,0,0,1,0,0,0,0,1,0,0,0,1,0,0,0,0,1,0,0,1,1],
-    [1,0,1,0,0,0,1,1,0,0,0,1,1,1,1,1,1,0,1,0,1,0,0,1,0,1,0,1,1,1,0,0,1,1,0,0,1,0,0,1],
-    [1,0,1,1,0,0,0,1,1,0,0,1,0,0,0,0,1,0,1,1,0,0,1,0,1,1,0,1,1,0,1,0,1,1,0,1,1,0,1,1],
-    [1,0,1,0,0,1,0,1,0,0,1,0,1,1,0,1,1,1,0,1,0,0,0,0,1,0,0,1,0,0,1,1,0,0,1,0,0,0,1,1],
-    [1,0,1,0,1,0,0,0,1,0,0,1,1,1,1,1,0,1,1,0,1,0,1,1,0,1,1,1,0,1,0,0,0,0,1,1,0,0,0,1],
-    [1,0,1,1,1,1,1,1,0,0,0,0,0,1,1,0,0,1,0,1,1,0,0,1,0,1,0,0,1,1,1,0,1,1,0,0,1,0,0,1],
-    [1,0,1,0,1,0,0,0,0,1,1,0,0,0,1,0,1,1,0,1,0,1,0,0,1,0,0,1,0,1,0,0,1,0,0,0,1,1,1,1],
-    [1,0,1,0,1,1,0,0,1,1,1,1,0,1,1,0,0,0,0,1,0,0,1,1,0,1,0,1,0,1,0,1,0,1,1,0,0,1,0,1],
-    [1,0,0,0,0,0,0,0,0,0,1,0,0,1,1,0,1,1,1,0,0,0,1,0,1,1,1,1,1,0,1,0,1,1,1,0,1,1,0,1],
-    [1,0,0,1,0,1,1,1,0,1,1,1,1,1,1,0,0,1,0,0,0,1,0,1,0,0,1,0,0,1,0,0,1,0,1,0,1,0,1,1],
-    [1,0,1,1,0,0,1,0,0,1,0,0,0,0,0,1,1,1,0,0,1,0,1,0,0,1,1,1,0,0,1,1,1,1,0,1,1,1,0,1],
-    [1,0,1,0,0,1,1,0,1,1,0,1,0,0,1,0,0,0,1,0,1,0,0,1,1,1,1,1,1,0,0,1,1,0,0,0,1,0,1,1],
-    [1,0,1,0,1,1,0,0,1,1,0,1,0,1,0,1,0,1,0,0,1,0,1,0,0,1,0,1,0,0,0,0,0,0,1,0,0,1,0,1],
-    [1,1,1,0,0,1,0,1,0,0,0,1,0,1,0,0,1,0,1,0,0,0,1,0,1,1,0,1,1,0,1,0,1,0,1,0,1,0,1,1],
-    [1,0,1,1,0,1,0,1,0,1,1,1,1,0,0,1,0,1,0,1,0,1,0,1,0,1,0,0,1,0,1,0,1,1,1,0,0,1,1,1],
-    [1,0,0,1,0,1,0,1,0,0,0,1,0,0,1,1,1,0,1,0,0,1,0,0,0,1,1,1,0,0,0,0,0,0,1,0,0,0,1,1],
-    [1,0,1,1,0,1,0,1,1,1,1,1,0,1,0,0,0,1,1,0,0,1,0,0,1,0,0,0,0,1,0,1,0,0,0,1,1,0,1,1],
-    [1,0,0,0,0,1,0,0,0,0,0,0,0,0,1,0,1,0,1,0,1,0,0,1,1,1,0,1,0,1,0,0,1,0,1,0,0,0,1,1],
+    [1,0,0,0,1,1,0,0,0,1,1,1,0,0,0,0,0,1,0,0,0,1,0,0,0,0,0,0,0,0,1,0,1,0,0,0,0,0,0,1],
+    [1,0,1,0,0,0,0,1,0,0,0,1,0,1,1,1,0,1,0,1,1,1,0,1,1,1,1,1,0,1,1,0,1,0,1,0,1,1,0,1],
+    [1,0,1,1,0,0,0,1,1,1,0,1,0,0,0,1,0,1,0,0,0,0,0,1,0,0,0,1,0,0,0,0,1,0,1,0,0,1,0,1],
+    [1,0,1,0,0,1,0,0,0,1,0,1,0,1,0,1,0,1,1,1,1,0,1,1,0,1,0,1,0,1,1,1,1,0,1,1,1,1,0,1],
+    [1,0,1,0,1,0,0,0,0,1,0,1,0,1,0,1,0,1,0,0,1,0,1,0,0,1,0,1,0,0,0,0,0,0,1,0,0,1,0,1],
+    [1,0,1,1,1,1,1,1,0,1,0,1,1,1,0,1,0,1,0,1,1,0,1,0,1,1,0,1,1,1,1,1,0,0,1,0,1,1,0,1],
+    [1,0,1,0,1,0,0,0,0,1,0,1,0,0,0,1,0,0,0,0,0,0,1,0,1,0,0,0,0,0,0,0,0,1,1,0,1,1,0,1],
+    [1,0,1,0,1,1,1,1,1,1,0,1,1,1,1,1,0,1,1,1,1,1,1,1,1,0,1,1,1,0,1,1,1,1,0,0,1,1,1,1],
+    [1,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,1,1,0,0,1],
+    [1,0,0,1,0,1,1,1,0,1,1,1,1,1,1,0,1,1,1,1,0,1,1,1,1,1,0,1,1,1,1,1,0,1,0,0,0,0,0,1],
+    [1,0,1,1,0,0,1,0,0,1,0,0,0,0,1,0,1,0,0,1,0,1,0,0,0,1,0,1,1,1,0,1,0,1,1,1,1,1,0,1],
+    [1,0,1,0,0,1,1,0,1,1,0,1,1,0,1,0,1,0,0,0,0,1,0,1,1,1,0,0,0,0,0,1,0,1,0,0,0,1,0,1],
+    [1,0,1,0,1,1,0,0,1,1,0,1,0,0,0,0,1,0,1,1,0,1,0,0,0,1,0,1,1,1,0,1,0,1,0,1,1,1,0,1],
+    [1,1,1,0,0,1,0,0,0,0,0,1,1,1,1,0,1,0,0,1,0,1,1,1,0,0,0,1,0,1,1,1,0,1,0,1,0,1,0,1],
+    [1,0,1,1,0,1,0,1,0,1,1,1,0,0,1,0,1,0,0,1,0,1,0,0,1,0,0,1,0,0,0,1,0,1,0,0,0,1,0,1],
+    [1,0,0,1,0,1,0,1,0,0,0,1,0,1,1,0,1,0,0,0,0,1,1,0,0,1,0,1,1,0,1,1,0,1,0,1,0,1,1,1],
+    [1,0,1,1,0,1,0,1,1,1,1,1,0,0,1,0,1,0,1,1,0,0,1,1,0,1,0,0,0,0,0,1,0,1,1,1,0,0,0,1],
+    [1,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,0,0,1,0,0,0,1,1,1,0,0,0,0,0,0,0,1,1,1],
     [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]
 ])
 
 # Resize or pad the matrix if necessary
 MAZE_HEIGHT, MAZE_WIDTH = maze_matrix.shape
 
+# Guards initial positions
+guardsMap1 = [
+    [16, 4, "guard1", "left"],
+    [9, 14, "guard1", "left"],
+    [19, 16, "guard1", "left"],
+    [28, 12, "guard1", "left"]
+]
+
 # Define the player
 class Player:
-    def __init__(self, x, y):
+    def __init__(self, x, y, speed):
         self.x = x  # Grid position x
         self.y = y  # Grid position y
+        self.direction = 'right'
+        self.speed = speed
 
     def move(self, dx, dy):
-        nx, ny = self.x + dx, self.y + dy
-        if 0 <= nx < MAZE_WIDTH and 0 <= ny < MAZE_HEIGHT:
-            if maze_matrix[ny, nx] == 0:
-                self.x = nx
-                self.y = ny
+        new_x = self.x + dx * self.speed
+        new_y = self.y + dy * self.speed
+        if 0 <= new_x < MAZE_WIDTH and 0 <= new_y < MAZE_HEIGHT:
+            if maze_matrix[new_y, new_x] == 0:
+                self.x = new_x
+                self.y = new_y
+
+# Guard class
+class Guard:
+    def __init__(self, x, y):
+        self.x = x
+        self.y = y
+
+    def move(self):
+        directions = [(0, 1), (1, 0), (0, -1), (-1, 0)]
+        random.shuffle(directions)
+        for dx, dy in directions:
+            new_x = self.x + dx
+            new_y = self.y + dy
+            if 0 <= new_x < MAZE_WIDTH and 0 <= new_y < MAZE_HEIGHT and maze_matrix[new_y, new_x] == 0:
+                self.x = new_x
+                self.y = new_y
+                break
 
 # Initialize the player at middle left of the labyrinth
 player_start_y = MAZE_HEIGHT // 2
-# Ensure player_start_y is in a path
 for y in range(player_start_y, MAZE_HEIGHT):
     if maze_matrix[y, 1] == 0:
         player_start_y = y
         break
 
-player = Player(1, player_start_y)
+player = Player(1, player_start_y, speed=1)
+
+# Initialize guards
+guards = [Guard(x, y) for x, y, _, _ in guardsMap1]
 
 # Main game loop
 clock = pygame.time.Clock()
 running = True
 
 while running:
-    clock.tick(60)  # Limit to 60 FPS
+    clock.tick(7)  # Limit to 7 FPS
 
     # Handle events
     for event in pygame.event.get():
@@ -89,28 +136,51 @@ while running:
     dx, dy = 0, 0
     if keys[pygame.K_LEFT]:
         dx = -1
+        player.direction = "left"
     elif keys[pygame.K_RIGHT]:
         dx = 1
+        player.direction = "right"
     elif keys[pygame.K_UP]:
         dy = -1
+        player.direction = "up"
     elif keys[pygame.K_DOWN]:
         dy = 1
+        player.direction = "down"
 
     if dx != 0 or dy != 0:
         player.move(dx, dy)
 
+    # Move guards
+    for guard in guards:
+        guard.move()
+
     # Draw the maze
-    screen.fill(WHITE)
+    screen.fill(backgroundColor)
     for y in range(MAZE_HEIGHT):
         for x in range(MAZE_WIDTH):
             rect = pygame.Rect(x * CELL_SIZE, y * CELL_SIZE, CELL_SIZE, CELL_SIZE)
+            image_x = x * CELL_SIZE
+            image_y = y * CELL_SIZE
             if maze_matrix[y, x] == 1:
-                pygame.draw.rect(screen, BLACK, rect)
-            # Paths are left black (background color)
+                screen.blit(brick, (image_x, image_y))
+            elif maze_matrix[y, x] == 2:
+                pygame.draw.rect(screen, checkPointColor, rect)
+            elif maze_matrix[y, x] == 3:
+                pygame.draw.rect(screen, codeColor, rect)
 
     # Draw the player
-    player_rect = pygame.Rect(player.x * CELL_SIZE, player.y * CELL_SIZE, CELL_SIZE, CELL_SIZE)
-    pygame.draw.rect(screen, PLAYER_COLOR, player_rect)
+    if player.direction == "left":
+        screen.blit(spyLeft, (player.x * CELL_SIZE, player.y * CELL_SIZE))
+    elif player.direction == "right":
+        screen.blit(spyRight, (player.x * CELL_SIZE, player.y * CELL_SIZE))
+    elif player.direction == "up":
+        screen.blit(spyUp, (player.x * CELL_SIZE, player.y * CELL_SIZE))
+    elif player.direction == "down":
+        screen.blit(spyDown, (player.x * CELL_SIZE, player.y * CELL_SIZE))
+
+    # Draw the guards
+    for guard in guards:
+        screen.blit(guard1Down, (guard.x * CELL_SIZE, guard.y * CELL_SIZE))
 
     # Update the display
     pygame.display.flip()
