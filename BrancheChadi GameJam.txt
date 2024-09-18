@@ -1,0 +1,10 @@
+Branche Chadi
+
+Menu démarrer à l'appui de Enter
+Rajout du checkpoint
+Rajout du bonus
+Disparition du checkpoint et du bonus quand on passe dessus
+Checkpoint fonctionne correctement: à l'appui de C on revient sur la position sauvé
+Algo A star pour la poursuite des ennemis (à revoir)
+Chrono à 3min (modifiable)
+Récupération du bonus active l'arrêt de chrono + agents (pendant 10 secondes modifiables)
