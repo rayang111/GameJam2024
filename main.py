@@ -24,6 +24,7 @@ codeColor = (255, 255, 0)
 # Load assets images
 brick = pygame.image.load("data/brick.png")
 bonus = pygame.image.load("data/bonus.png")
+checkpoint = pygame.image.load("data/checkpoint.png")
 
 guard1Down = pygame.image.load("data/guard1.png")
 guard1Up = pygame.transform.rotate(guard1Down, 180)
@@ -92,14 +93,23 @@ class Player:
 
 # Guard class
 class Guard:
-    def __init__(self, x, y):
+    def __init__(self, x, y, direction):
         self.x = x
         self.y = y
+        self.direction = direction
 
     def move(self):
         directions = [(0, 1), (1, 0), (0, -1), (-1, 0)]
         random.shuffle(directions)
         for dx, dy in directions:
+            if dx == -1:
+                self.direction = "left"
+            elif dx == 1:
+                self.direction = "right"
+            elif dy == -1:
+                self.direction = "up"
+            elif dy == 1:
+                self.direction = "down"
             new_x = self.x + dx
             new_y = self.y + dy
             if 0 <= new_x < MAZE_WIDTH and 0 <= new_y < MAZE_HEIGHT and maze_matrix[new_y, new_x] == 0:
@@ -117,7 +127,7 @@ for y in range(player_start_y, MAZE_HEIGHT):
 player = Player(1, player_start_y, speed=1)
 
 # Initialize guards
-guards = [Guard(x, y) for x, y, _, _ in guardsMap1]
+guards = [Guard(x, y, direction) for x, y, _, direction in guardsMap1]
 
 # Main game loop
 clock = pygame.time.Clock()
@@ -180,7 +190,14 @@ while running:
 
     # Draw the guards
     for guard in guards:
-        screen.blit(guard1Down, (guard.x * CELL_SIZE, guard.y * CELL_SIZE))
+        if guard.direction == "left":
+            screen.blit(guard1Left, (guard.x * CELL_SIZE, guard.y * CELL_SIZE))
+        elif guard.direction== "right":
+            screen.blit(guard1Right, (guard.x * CELL_SIZE, guard.y * CELL_SIZE))
+        elif guard.direction == "up":
+            screen.blit(guard1Up, (guard.x * CELL_SIZE, guard.y * CELL_SIZE))
+        elif guard.direction == "down":
+            screen.blit(guard1Down, (guard.x * CELL_SIZE, guard.y * CELL_SIZE))
 
     # Update the display
     pygame.display.flip()
