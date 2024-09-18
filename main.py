@@ -95,10 +95,13 @@ class Player:
                 self.x = new_x
                 self.y = new_y
 
+                # Remove bonus or checkpoint if player steps on it
                 if maze_matrix[new_y, new_x] == 2:  # Checkpoint
                     maze_matrix[new_y, new_x] = 0
+                    return "checkpoint"
                 elif maze_matrix[new_y, new_x] == 3:  # Bonus
                     maze_matrix[new_y, new_x] = 0
+        return None
 
 # Guard class
 class Guard:
@@ -138,6 +141,9 @@ player = Player(1, player_start_y, speed=1)
 # Initialize guards
 guards = [Guard(x, y, direction) for x, y, _, direction in guardsMap1]
 
+# Initialize checkpoint state storage
+checkpoint_state = None
+
 # Main game loop
 clock = pygame.time.Clock()
 running = True
@@ -167,7 +173,20 @@ while running:
         player.direction = "down"
 
     if dx != 0 or dy != 0:
-        player.move(dx, dy)
+        result = player.move(dx, dy)
+
+        # si l'agent récupère le checkpoint l'état du jeu est sauvegardé
+        if result == "checkpoint":
+            checkpoint_state = {
+                "player_pos": (player.x, player.y),
+                "guards_pos": [(guard.x, guard.y) for guard in guards]
+            }
+
+    # Restaurer l'état du jeu à l'appui de 'C'
+    if keys[pygame.K_c] and checkpoint_state is not None:
+        player.x, player.y = checkpoint_state["player_pos"]
+        for i, guard in enumerate(guards):
+            guard.x, guard.y = checkpoint_state["guards_pos"][i]
 
     # Move guards
     for guard in guards:
