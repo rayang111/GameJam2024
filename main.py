@@ -4,6 +4,7 @@ import heapq
 
 # Initialize Pygame
 pygame.init()
+pygame.font.init()  # Initialize font module
 
 # Screen dimensions
 SCREEN_WIDTH = 1280
@@ -20,12 +21,13 @@ playerColor = (192, 192, 192)
 enemyColor = (255, 0, 0)
 checkPointColor = (0, 0, 255)
 codeColor = (255, 255, 0)
+red = (255, 0, 0)  # Red for timer text
 
 # Load assets images
 brick = pygame.image.load("data/brick.png")
-bonus = pygame.image.load("data/bonus.png")  # Image du bonus
-checkpoint = pygame.image.load("data/checkpoint.png")  # Image du checkpoint
-menu_principal = pygame.image.load("data/menu_principal.png")  # Image du menu principal
+bonus = pygame.image.load("data/bonus.png")  # Image of the bonus
+checkpoint = pygame.image.load("data/checkpoint.png")  # Image of the checkpoint
+menu_principal = pygame.image.load("data/menu_principal.png")  # Main menu image
 
 guard1Down = pygame.image.load("data/guard1.png")
 guard1Up = pygame.transform.rotate(guard1Down, 180)
@@ -44,10 +46,10 @@ pygame.display.set_caption("Labyrinth Game")
 # Define the maze matrix using NumPy
 maze_matrix = np.array([
     [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
-    [1,0,0,0,2,1,0,0,0,1,1,1,0,0,0,0,0,1,0,0,0,1,0,0,0,0,0,0,0,0,1,0,1,0,0,0,0,0,0,1],  # Checkpoint à cet emplacement (2)
+    [1,0,0,0,2,1,0,0,0,1,1,1,0,0,0,0,0,1,0,0,0,1,0,0,0,0,0,0,0,0,1,0,1,0,0,0,0,0,0,1],  # Checkpoint at position (2)
     [1,0,1,0,0,0,0,1,0,0,0,1,0,1,1,1,0,1,0,1,1,1,0,1,1,1,1,1,0,1,1,0,1,0,1,0,1,1,0,1],
     [1,0,1,1,0,0,0,1,1,1,0,1,0,0,0,1,0,1,0,0,0,0,0,1,0,0,0,1,0,0,0,0,1,0,1,0,0,1,0,1],
-    [1,3,1,0,0,1,0,0,0,1,0,1,0,1,0,1,0,1,1,1,1,0,1,1,0,1,0,1,0,1,1,1,1,0,1,1,1,1,0,1],
+    [1,0,1,0,0,1,0,0,0,1,0,1,0,1,0,1,0,1,1,1,1,0,1,1,0,1,0,1,0,1,1,1,1,0,1,1,1,1,0,1],
     [1,0,1,0,1,0,0,0,0,1,0,1,0,1,0,1,0,1,0,0,1,0,1,0,0,1,0,1,0,0,0,0,0,0,1,0,0,1,0,1],
     [1,0,1,1,1,1,1,1,0,1,0,1,1,1,0,1,0,1,0,1,1,0,1,0,1,1,0,1,1,1,1,1,0,0,1,0,1,1,0,1],
     [1,0,1,0,1,0,0,0,0,1,0,1,0,0,0,1,0,0,0,0,0,0,1,0,1,0,0,0,0,0,0,0,0,1,1,0,1,1,0,1],
@@ -64,6 +66,10 @@ maze_matrix = np.array([
     [1,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,0,0,1,0,0,0,1,1,1,0,0,0,0,0,0,0,1,1,1],
     [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]
 ])
+
+# Timer settings (3 minutes in seconds)
+time_limit = 3 * 60  
+start_ticks = pygame.time.get_ticks()  # Store the starting time
 
 # Directions for A* (up, down, left, right)
 DIRECTIONS = [(0, 1), (1, 0), (0, -1), (-1, 0)]
@@ -190,6 +196,12 @@ running = True
 game_started = False  # Variable to track if the game has started or not
 game_over = False  # Variable to freeze the game when an enemy catches the player
 
+def render_timer(screen, time_left):
+    font = pygame.font.SysFont(None, 48)
+    time_text = f"{time_left // 60:02}:{time_left % 60:02}"
+    timer_surf = font.render(time_text, True, red)
+    screen.blit(timer_surf, (SCREEN_WIDTH - 150, 10))  # Position at top-right corner
+
 while running:
     clock.tick(4)  # Slower FPS for enemies (now adjusted further)
 
@@ -205,7 +217,12 @@ while running:
         screen.blit(menu_principal, (0, 0))
         if keys[pygame.K_RETURN]:
             game_started = True
+            start_ticks = pygame.time.get_ticks()  # Reset timer when game starts
     elif not game_over:  # Only move and update if the game is not over
+        # Timer countdown
+        seconds_elapsed = (pygame.time.get_ticks() - start_ticks) // 1000
+        time_left = max(0, time_limit - seconds_elapsed)  # Calculate time left
+
         # Handle player movement
         dx, dy = 0, 0
         if keys[pygame.K_LEFT]:
@@ -254,9 +271,9 @@ while running:
                 image_y = y * CELL_SIZE
                 if maze_matrix[y, x] == 1:
                     screen.blit(brick, (image_x, image_y))
-                elif maze_matrix[y, x] == 2:  # Afficher l'item checkpoint à cet emplacement
+                elif maze_matrix[y, x] == 2:  # Show checkpoint item at this location
                     screen.blit(checkpoint, (image_x, image_y))
-                elif maze_matrix[y, x] == 3:  # Afficher l'item bonus à cet emplacement
+                elif maze_matrix[y, x] == 3:  # Show bonus item at this location
                     screen.blit(bonus, (image_x, image_y))
 
         # Draw the player
@@ -281,6 +298,9 @@ while running:
                 screen.blit(guard1Up, (guard.x * CELL_SIZE, guard.y * CELL_SIZE))
             elif guard.direction == "down":
                 screen.blit(guard1Down, (guard.x * CELL_SIZE, guard.y * CELL_SIZE))
+
+        # Render the timer on the screen
+        render_timer(screen, time_left)
 
     # Update the display
     pygame.display.flip()
