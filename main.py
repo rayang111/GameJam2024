@@ -1,6 +1,6 @@
 import pygame
 import numpy as np
-import random
+import heapq
 
 # Initialize Pygame
 pygame.init()
@@ -47,12 +47,12 @@ maze_matrix = np.array([
     [1,0,0,0,2,1,0,0,0,1,1,1,0,0,0,0,0,1,0,0,0,1,0,0,0,0,0,0,0,0,1,0,1,0,0,0,0,0,0,1],  # Checkpoint à cet emplacement (2)
     [1,0,1,0,0,0,0,1,0,0,0,1,0,1,1,1,0,1,0,1,1,1,0,1,1,1,1,1,0,1,1,0,1,0,1,0,1,1,0,1],
     [1,0,1,1,0,0,0,1,1,1,0,1,0,0,0,1,0,1,0,0,0,0,0,1,0,0,0,1,0,0,0,0,1,0,1,0,0,1,0,1],
-    [1,0,1,0,0,1,0,0,0,1,0,1,0,1,0,1,0,1,1,1,1,0,1,1,0,1,0,1,0,1,1,1,1,0,1,1,1,1,0,1],
+    [1,3,1,0,0,1,0,0,0,1,0,1,0,1,0,1,0,1,1,1,1,0,1,1,0,1,0,1,0,1,1,1,1,0,1,1,1,1,0,1],
     [1,0,1,0,1,0,0,0,0,1,0,1,0,1,0,1,0,1,0,0,1,0,1,0,0,1,0,1,0,0,0,0,0,0,1,0,0,1,0,1],
     [1,0,1,1,1,1,1,1,0,1,0,1,1,1,0,1,0,1,0,1,1,0,1,0,1,1,0,1,1,1,1,1,0,0,1,0,1,1,0,1],
     [1,0,1,0,1,0,0,0,0,1,0,1,0,0,0,1,0,0,0,0,0,0,1,0,1,0,0,0,0,0,0,0,0,1,1,0,1,1,0,1],
     [1,0,1,0,1,1,1,1,1,1,0,1,1,1,1,1,0,1,1,1,1,1,1,1,1,0,1,1,1,0,1,1,1,1,0,0,1,1,1,1],
-    [1,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,1,1,0,0,1],
+    [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,1,1,0,0,1],
     [1,0,0,1,0,1,1,1,0,1,1,1,1,1,1,0,1,1,1,1,0,1,1,1,1,1,0,1,1,1,1,1,0,1,0,0,0,0,0,1],
     [1,0,1,1,0,0,1,0,0,1,0,0,0,0,1,0,1,0,0,1,0,1,0,0,0,1,0,1,1,1,0,1,0,1,1,1,1,1,0,1],
     [1,0,1,0,0,1,1,0,1,1,0,1,1,0,1,0,1,0,0,0,0,1,0,1,1,1,0,0,0,0,0,1,0,1,0,0,0,1,0,1],
@@ -65,20 +65,46 @@ maze_matrix = np.array([
     [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]
 ])
 
-# Place the bonus at a random 0 cell in the maze
-bonus_position = (7, 12)  # Example of a random position (7th row, 12th column)
-maze_matrix[bonus_position[0], bonus_position[1]] = 3  # Set the bonus value to 3
+# Directions for A* (up, down, left, right)
+DIRECTIONS = [(0, 1), (1, 0), (0, -1), (-1, 0)]
 
-# Resize or pad the matrix if necessary
-MAZE_HEIGHT, MAZE_WIDTH = maze_matrix.shape
+# Heuristic function for A* (Manhattan distance)
+def heuristic(a, b):
+    return abs(a[0] - b[0]) + abs(a[1] - b[1])
 
-# Guards initial positions
-guardsMap1 = [
-    [16, 4, "guard1", "left"],
-    [9, 14, "guard1", "left"],
-    [19, 16, "guard1", "left"],
-    [28, 12, "guard1", "left"]
-]
+# A* pathfinding algorithm
+def a_star(maze, start, goal):
+    open_list = []
+    heapq.heappush(open_list, (0, start))
+    came_from = {}
+    g_score = {start: 0}
+    f_score = {start: heuristic(start, goal)}
+
+    while open_list:
+        current = heapq.heappop(open_list)[1]
+
+        if current == goal:
+            # Reconstruct the path
+            path = []
+            while current in came_from:
+                path.append(current)
+                current = came_from[current]
+            path.reverse()
+            return path
+
+        for direction in DIRECTIONS:
+            neighbor = (current[0] + direction[0], current[1] + direction[1])
+
+            if 0 <= neighbor[0] < maze.shape[0] and 0 <= neighbor[1] < maze.shape[1] and maze[neighbor[0], neighbor[1]] == 0:
+                tentative_g_score = g_score[current] + 1
+
+                if neighbor not in g_score or tentative_g_score < g_score[neighbor]:
+                    came_from[neighbor] = current
+                    g_score[neighbor] = tentative_g_score
+                    f_score[neighbor] = g_score[neighbor] + heuristic(neighbor, goal)
+                    heapq.heappush(open_list, (f_score[neighbor], neighbor))
+
+    return []  # Return empty path if no path found
 
 # Define the player
 class Player:
@@ -88,10 +114,10 @@ class Player:
         self.direction = 'right'
         self.speed = speed
 
-    def move(self, dx, dy):
-        new_x = self.x + dx * self.speed
-        new_y = self.y + dy * self.speed
-        if 0 <= new_x < MAZE_WIDTH and 0 <= new_y < MAZE_HEIGHT:
+    def move(self, dx, dy, maze_matrix):
+        new_x = self.x + dx
+        new_y = self.y + dy
+        if 0 <= new_x < maze_matrix.shape[1] and 0 <= new_y < maze_matrix.shape[0]:
             if maze_matrix[new_y, new_x] == 0 or maze_matrix[new_y, new_x] in (2, 3):  # Walk on bonus or checkpoint
                 self.x = new_x
                 self.y = new_y
@@ -104,43 +130,55 @@ class Player:
                     maze_matrix[new_y, new_x] = 0
         return None
 
-# Guard class
+# Guard class using A* for pathfinding
 class Guard:
-    def __init__(self, x, y, direction):
+    def __init__(self, x, y, speed):
         self.x = x
         self.y = y
-        self.direction = direction
+        self.speed = speed // 4  # Slow down enemies further
+        self.chasing_speed = speed // 2  # Chasing speed is faster but still slower than the player
+        self.patrol_speed = speed // 4
+        self.path = []  # Path found by A*
+        self.direction = "down"  # Default direction
 
-    def move(self):
-        directions = [(0, 1), (1, 0), (0, -1), (-1, 0)]
-        random.shuffle(directions)
-        for dx, dy in directions:
-            if dx == -1:
-                self.direction = "left"
-            elif dx == 1:
+    def move(self, player, maze_matrix):
+        if abs(self.x - player.x) <= 3 and abs(self.y - player.y) <= 3:
+            # Increase speed when within 3 cells of the player
+            self.speed = self.chasing_speed
+        else:
+            self.speed = self.patrol_speed
+
+        # Recalculate path if no path or already reached target
+        if not self.path or (self.x, self.y) == self.path[-1]:
+            self.path = a_star(maze_matrix, (self.y, self.x), (player.y, player.x))
+
+        # Follow the path
+        if self.path:
+            next_step = self.path.pop(0)
+            # Determine direction based on movement
+            if next_step[1] > self.x:
                 self.direction = "right"
-            elif dy == -1:
-                self.direction = "up"
-            elif dy == 1:
+            elif next_step[1] < self.x:
+                self.direction = "left"
+            elif next_step[0] > self.y:
                 self.direction = "down"
-            new_x = self.x + dx
-            new_y = self.y + dy
-            if 0 <= new_x < MAZE_WIDTH and 0 <= new_y < MAZE_HEIGHT and maze_matrix[new_y, new_x] == 0:
-                self.x = new_x
-                self.y = new_y
-                break
+            elif next_step[0] < self.y:
+                self.direction = "up"
+            self.x, self.y = next_step[1], next_step[0]
+
+    def check_collision(self, player):
+        return self.x == player.x and self.y == player.y
 
 # Initialize the player at middle left of the labyrinth
-player_start_y = MAZE_HEIGHT // 2
-for y in range(player_start_y, MAZE_HEIGHT):
-    if maze_matrix[y, 1] == 0:
-        player_start_y = y
-        break
+player = Player(1, 1, speed=2)
 
-player = Player(1, player_start_y, speed=1)
-
-# Initialize guards
-guards = [Guard(x, y, direction) for x, y, _, direction in guardsMap1]
+# Guards initial positions and speed
+guards = [
+    Guard(16, 4, speed=2),
+    Guard(9, 14, speed=2),
+    Guard(19, 16, speed=2),
+    Guard(28, 12, speed=2)
+]
 
 # Initialize checkpoint state storage
 checkpoint_state = None
@@ -150,9 +188,10 @@ checkpoint_used = False  # Variable to track if the checkpoint has already been 
 clock = pygame.time.Clock()
 running = True
 game_started = False  # Variable to track if the game has started or not
+game_over = False  # Variable to freeze the game when an enemy catches the player
 
 while running:
-    clock.tick(7)  # Limit to 7 FPS
+    clock.tick(4)  # Slower FPS for enemies (now adjusted further)
 
     # Handle events
     for event in pygame.event.get():
@@ -162,11 +201,11 @@ while running:
     keys = pygame.key.get_pressed()
 
     if not game_started:
-        # Display the main menu and wait for the player to press SPACE
+        # Display the main menu and wait for the player to press ENTER
         screen.blit(menu_principal, (0, 0))
         if keys[pygame.K_RETURN]:
             game_started = True
-    else:
+    elif not game_over:  # Only move and update if the game is not over
         # Handle player movement
         dx, dy = 0, 0
         if keys[pygame.K_LEFT]:
@@ -183,7 +222,7 @@ while running:
             player.direction = "down"
 
         if dx != 0 or dy != 0:
-            result = player.move(dx, dy)
+            result = player.move(dx, dy, maze_matrix)
 
             # If the player collected a checkpoint, save the game state
             if result == "checkpoint":
@@ -200,14 +239,16 @@ while running:
                 guard.x, guard.y = checkpoint_state["guards_pos"][i]
             checkpoint_used = True  # Mark the checkpoint as used
 
-        # Move guards
+        # Move guards and check for collisions with the player
         for guard in guards:
-            guard.move()
+            guard.move(player, maze_matrix)
+            if guard.check_collision(player):
+                game_over = True  # Freeze the game if a guard catches the player
 
         # Draw the maze
         screen.fill(backgroundColor)
-        for y in range(MAZE_HEIGHT):
-            for x in range(MAZE_WIDTH):
+        for y in range(maze_matrix.shape[0]):
+            for x in range(maze_matrix.shape[1]):
                 rect = pygame.Rect(x * CELL_SIZE, y * CELL_SIZE, CELL_SIZE, CELL_SIZE)
                 image_x = x * CELL_SIZE
                 image_y = y * CELL_SIZE
@@ -230,6 +271,8 @@ while running:
 
         # Draw the guards
         for guard in guards:
+            if guard.x < 0 or guard.y < 0 or guard.x >= maze_matrix.shape[1] or guard.y >= maze_matrix.shape[0]:
+                continue  # Make sure the guards stay inside the maze
             if guard.direction == "left":
                 screen.blit(guard1Left, (guard.x * CELL_SIZE, guard.y * CELL_SIZE))
             elif guard.direction == "right":
