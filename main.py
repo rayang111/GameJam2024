@@ -25,6 +25,7 @@ codeColor = (255, 255, 0)
 brick = pygame.image.load("data/brick.png")
 bonus = pygame.image.load("data/bonus.png")  # Image du bonus
 checkpoint = pygame.image.load("data/checkpoint.png")  # Image du checkpoint
+menu_principal = pygame.image.load("data/menu_principal.png")  # Image du menu principal
 
 guard1Down = pygame.image.load("data/guard1.png")
 guard1Up = pygame.transform.rotate(guard1Down, 180)
@@ -148,6 +149,7 @@ checkpoint_used = False  # Variable to track if the checkpoint has already been 
 # Main game loop
 clock = pygame.time.Clock()
 running = True
+game_started = False  # Variable to track if the game has started or not
 
 while running:
     clock.tick(7)  # Limit to 7 FPS
@@ -157,78 +159,85 @@ while running:
         if event.type == pygame.QUIT:
             running = False
 
-    # Handle player movement
     keys = pygame.key.get_pressed()
-    dx, dy = 0, 0
-    if keys[pygame.K_LEFT]:
-        dx = -1
-        player.direction = "left"
-    elif keys[pygame.K_RIGHT]:
-        dx = 1
-        player.direction = "right"
-    elif keys[pygame.K_UP]:
-        dy = -1
-        player.direction = "up"
-    elif keys[pygame.K_DOWN]:
-        dy = 1
-        player.direction = "down"
 
-    if dx != 0 or dy != 0:
-        result = player.move(dx, dy)
+    if not game_started:
+        # Display the main menu and wait for the player to press SPACE
+        screen.blit(menu_principal, (0, 0))
+        if keys[pygame.K_RETURN]:
+            game_started = True
+    else:
+        # Handle player movement
+        dx, dy = 0, 0
+        if keys[pygame.K_LEFT]:
+            dx = -1
+            player.direction = "left"
+        elif keys[pygame.K_RIGHT]:
+            dx = 1
+            player.direction = "right"
+        elif keys[pygame.K_UP]:
+            dy = -1
+            player.direction = "up"
+        elif keys[pygame.K_DOWN]:
+            dy = 1
+            player.direction = "down"
 
-        # Enregistrement de l'état du jeu au checkpoint
-        if result == "checkpoint":
-            checkpoint_state = {
-                "player_pos": (player.x, player.y),
-                "guards_pos": [(guard.x, guard.y) for guard in guards]
-            }
-            checkpoint_used = False  # Reset the checkpoint usage flag
+        if dx != 0 or dy != 0:
+            result = player.move(dx, dy)
 
-    # Restaurer l'état du jeu à l'appui de 'C'
-    if keys[pygame.K_c] and checkpoint_state is not None and not checkpoint_used:
-        player.x, player.y = checkpoint_state["player_pos"]
-        for i, guard in enumerate(guards):
-            guard.x, guard.y = checkpoint_state["guards_pos"][i]
-        checkpoint_used = True  # Mark the checkpoint as used
+            # If the player collected a checkpoint, save the game state
+            if result == "checkpoint":
+                checkpoint_state = {
+                    "player_pos": (player.x, player.y),
+                    "guards_pos": [(guard.x, guard.y) for guard in guards]
+                }
+                checkpoint_used = False  # Reset the checkpoint usage flag
 
-    # Move guards
-    for guard in guards:
-        guard.move()
+        # If the player presses "C" and checkpoint is not yet used, restore the game state
+        if keys[pygame.K_c] and checkpoint_state is not None and not checkpoint_used:
+            player.x, player.y = checkpoint_state["player_pos"]
+            for i, guard in enumerate(guards):
+                guard.x, guard.y = checkpoint_state["guards_pos"][i]
+            checkpoint_used = True  # Mark the checkpoint as used
 
-    # Draw the maze
-    screen.fill(backgroundColor)
-    for y in range(MAZE_HEIGHT):
-        for x in range(MAZE_WIDTH):
-            rect = pygame.Rect(x * CELL_SIZE, y * CELL_SIZE, CELL_SIZE, CELL_SIZE)
-            image_x = x * CELL_SIZE
-            image_y = y * CELL_SIZE
-            if maze_matrix[y, x] == 1:
-                screen.blit(brick, (image_x, image_y))
-            elif maze_matrix[y, x] == 2:  # Afficher l'item checkpoint à cet emplacement
-                screen.blit(checkpoint, (image_x, image_y))
-            elif maze_matrix[y, x] == 3:  # Afficher l'item bonus à cet emplacement
-                screen.blit(bonus, (image_x, image_y))
+        # Move guards
+        for guard in guards:
+            guard.move()
 
-    # Draw the player
-    if player.direction == "left":
-        screen.blit(spyLeft, (player.x * CELL_SIZE, player.y * CELL_SIZE))
-    elif player.direction == "right":
-        screen.blit(spyRight, (player.x * CELL_SIZE, player.y * CELL_SIZE))
-    elif player.direction == "up":
-        screen.blit(spyUp, (player.x * CELL_SIZE, player.y * CELL_SIZE))
-    elif player.direction == "down":
-        screen.blit(spyDown, (player.x * CELL_SIZE, player.y * CELL_SIZE))
+        # Draw the maze
+        screen.fill(backgroundColor)
+        for y in range(MAZE_HEIGHT):
+            for x in range(MAZE_WIDTH):
+                rect = pygame.Rect(x * CELL_SIZE, y * CELL_SIZE, CELL_SIZE, CELL_SIZE)
+                image_x = x * CELL_SIZE
+                image_y = y * CELL_SIZE
+                if maze_matrix[y, x] == 1:
+                    screen.blit(brick, (image_x, image_y))
+                elif maze_matrix[y, x] == 2:  # Afficher l'item checkpoint à cet emplacement
+                    screen.blit(checkpoint, (image_x, image_y))
+                elif maze_matrix[y, x] == 3:  # Afficher l'item bonus à cet emplacement
+                    screen.blit(bonus, (image_x, image_y))
 
-    # Draw the guards
-    for guard in guards:
-        if guard.direction == "left":
-            screen.blit(guard1Left, (guard.x * CELL_SIZE, guard.y * CELL_SIZE))
-        elif guard.direction == "right":
-            screen.blit(guard1Right, (guard.x * CELL_SIZE, guard.y * CELL_SIZE))
-        elif guard.direction == "up":
-            screen.blit(guard1Up, (guard.x * CELL_SIZE, guard.y * CELL_SIZE))
-        elif guard.direction == "down":
-            screen.blit(guard1Down, (guard.x * CELL_SIZE, guard.y * CELL_SIZE))
+        # Draw the player
+        if player.direction == "left":
+            screen.blit(spyLeft, (player.x * CELL_SIZE, player.y * CELL_SIZE))
+        elif player.direction == "right":
+            screen.blit(spyRight, (player.x * CELL_SIZE, player.y * CELL_SIZE))
+        elif player.direction == "up":
+            screen.blit(spyUp, (player.x * CELL_SIZE, player.y * CELL_SIZE))
+        elif player.direction == "down":
+            screen.blit(spyDown, (player.x * CELL_SIZE, player.y * CELL_SIZE))
+
+        # Draw the guards
+        for guard in guards:
+            if guard.direction == "left":
+                screen.blit(guard1Left, (guard.x * CELL_SIZE, guard.y * CELL_SIZE))
+            elif guard.direction == "right":
+                screen.blit(guard1Right, (guard.x * CELL_SIZE, guard.y * CELL_SIZE))
+            elif guard.direction == "up":
+                screen.blit(guard1Up, (guard.x * CELL_SIZE, guard.y * CELL_SIZE))
+            elif guard.direction == "down":
+                screen.blit(guard1Down, (guard.x * CELL_SIZE, guard.y * CELL_SIZE))
 
     # Update the display
     pygame.display.flip()
