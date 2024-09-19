@@ -1,6 +1,7 @@
 import pygame
 import numpy as np
 import random
+import heapq
 
 # Initialize Pygame
 pygame.init()
@@ -12,6 +13,7 @@ playerColor = (192, 192, 192)
 enemyColor = (255, 0, 0)
 checkPointColor = (0, 0, 255)
 codeColor = (255, 255, 0)
+red = (255, 0, 0)  # Red for timer text
 
 # Load assets images
 brick = pygame.image.load("data/brick.png")
@@ -41,7 +43,7 @@ maze_matrix1 = np.array([
     [1,0,0,0,2,1,0,0,0,1,1,1,0,0,0,0,0,1,0,0,0,1,0,0,0,0,0,0,0,0,1,0,1,0,0,0,0,0,0,1,1,1,1,1,1,1,1,1],
     [1,0,1,0,0,0,0,1,0,0,0,1,0,1,1,1,0,1,0,1,1,1,0,1,1,1,1,1,0,1,1,0,1,0,1,0,1,1,0,1,1,1,1,1,1,1,1,1],
     [1,0,1,1,0,0,0,1,1,1,0,1,0,0,0,1,0,1,0,0,0,0,0,1,0,0,0,1,0,0,0,0,1,0,1,0,0,1,0,1,1,1,1,1,1,1,1,1],
-    [1,0,1,0,0,1,0,0,0,1,0,1,0,1,0,1,0,1,1,1,1,0,1,1,0,1,0,1,0,1,1,1,1,0,1,1,1,1,0,1,1,1,1,1,1,1,1,1],
+    [1,3,1,0,0,1,0,0,0,1,0,1,0,1,0,1,0,1,1,1,1,0,1,1,0,1,0,1,0,1,1,1,1,0,1,1,1,1,0,1,1,1,1,1,1,1,1,1],
     [1,0,1,0,1,0,0,0,0,1,0,1,0,1,0,1,0,1,0,0,1,0,1,0,0,1,0,1,0,0,0,0,0,0,1,0,0,1,0,1,1,1,1,1,1,1,1,1],
     [1,0,1,1,1,1,1,1,0,1,0,1,1,1,0,1,0,1,0,1,1,0,1,0,1,1,0,1,1,1,1,1,0,0,1,0,1,1,0,1,1,1,1,1,1,1,1,1],
     [1,0,1,0,1,0,0,0,0,1,0,1,0,0,0,1,0,0,0,0,0,0,1,0,1,0,0,0,0,0,0,0,0,1,1,0,1,1,0,1,1,1,1,1,1,1,1,1],
@@ -77,6 +79,13 @@ guardsMap1 = [
     [28, 12, "guard1", "left"]
 ]
 
+# Timer settings (3 minutes in seconds)
+time_limit = 3 * 60  
+start_ticks = pygame.time.get_ticks()  # Store the starting time
+
+# Directions for A* (up, down, left, right)
+DIRECTIONS = [(0, 1), (1, 0), (0, -1), (-1, 0)]
+
 # Place the bonus at a random 0 cell in the maze
 bonus_position = (7, 12)  # Example of a random position (7th row, 12th column)
 maze_matrix1[bonus_position[0], bonus_position[1]] = 3  # Set the bonus value to 3
@@ -85,6 +94,45 @@ maze_matrix1[bonus_position[0], bonus_position[1]] = 3  # Set the bonus value to
 font = pygame.font.SysFont("Arial", 74)
 pauseText = font.render('Pause', True, (0, 0, 0))
 pauseText_width, pauseText_height = pauseText.get_size()
+
+# Heuristic function for A* (Manhattan distance)
+def heuristic(a, b):
+    return abs(a[0] - b[0]) + abs(a[1] - b[1])
+
+# A* pathfinding algorithm
+def a_star(maze, start, goal):
+    open_list = []
+    heapq.heappush(open_list, (0, start))
+    came_from = {}
+    g_score = {start: 0}
+    f_score = {start: heuristic(start, goal)}
+
+    while open_list:
+        current = heapq.heappop(open_list)[1]
+
+        if current == goal:
+            # Reconstruct the path
+            path = []
+            while current in came_from:
+                path.append(current)
+                current = came_from[current]
+            path.reverse()
+            return path
+
+        for direction in DIRECTIONS:
+            neighbor = (current[0] + direction[0], current[1] + direction[1])
+
+            if 0 <= neighbor[0] < maze.shape[0] and 0 <= neighbor[1] < maze.shape[1] and maze[neighbor[0], neighbor[1]] == 0:
+                tentative_g_score = g_score[current] + 1
+
+                if neighbor not in g_score or tentative_g_score < g_score[neighbor]:
+                    came_from[neighbor] = current
+                    g_score[neighbor] = tentative_g_score
+                    f_score[neighbor] = g_score[neighbor] + heuristic(neighbor, goal)
+                    heapq.heappush(open_list, (f_score[neighbor], neighbor))
+
+    return []  # Return empty path if no path found
+
 
 # Define the player
 class Player:
@@ -113,29 +161,42 @@ class Player:
 
 # Guard class
 class Guard:
-    def __init__(self, x, y, direction):
+    def __init__(self, x, y, direction, speed):
         self.x = x
         self.y = y
-        self.direction = direction
+        self.speed = speed // 4  # Slow down enemies further
+        self.chasing_speed = speed // 2  # Chasing speed is faster but still slower than the player
+        self.patrol_speed = speed // 4
+        self.path = []  # Path found by A*
+        self.direction = "down"  # Default direction
 
-    def move(self):
-        directions = [(0, 1), (1, 0), (0, -1), (-1, 0)]
-        random.shuffle(directions)
-        for dx, dy in directions:
-            if dx == -1:
-                self.direction = "left"
-            elif dx == 1:
+    def move(self, player, maze_matrix):
+        if abs(self.x - player.x) <= 3 and abs(self.y - player.y) <= 3:
+            # Increase speed when within 3 cells of the player
+            self.speed = self.chasing_speed
+        else:
+            self.speed = self.patrol_speed
+
+        # Recalculate path if no path or already reached target
+        if not self.path or (self.x, self.y) == self.path[-1]:
+            self.path = a_star(maze_matrix, (self.y, self.x), (player.y, player.x))
+
+        # Follow the path
+        if self.path:
+            next_step = self.path.pop(0)
+            # Determine direction based on movement
+            if next_step[1] > self.x:
                 self.direction = "right"
-            elif dy == -1:
-                self.direction = "up"
-            elif dy == 1:
+            elif next_step[1] < self.x:
+                self.direction = "left"
+            elif next_step[0] > self.y:
                 self.direction = "down"
-            new_x = self.x + dx
-            new_y = self.y + dy
-            if 0 <= new_x < MAZE_WIDTH and 0 <= new_y < MAZE_HEIGHT and maze_matrix1[new_y, new_x] == 0:
-                self.x = new_x
-                self.y = new_y
-                break
+            elif next_step[0] < self.y:
+                self.direction = "up"
+            self.x, self.y = next_step[1], next_step[0]
+
+    def check_collision(self, player):
+        return self.x == player.x and self.y == player.y
 
 # Initialize the player at middle left of the labyrinth
 player_start_y = MAZE_HEIGHT // 2
@@ -146,8 +207,13 @@ for y in range(player_start_y, MAZE_HEIGHT):
 
 player = Player(1, player_start_y, speed=1)
 
-# Initialize guards
-guards = [Guard(x, y, direction) for x, y, _, direction in guardsMap1]
+# Guards initial positions and speed
+guards = [
+    Guard(16, 4, "left", speed=2),
+    Guard(9, 14, "left", speed=2),
+    Guard(19, 16, "left", speed=2),
+    Guard(28, 12, "left", speed=2)
+]
 
 # Initialize checkpoint state storage
 checkpoint_state = None
@@ -160,9 +226,17 @@ running = True
 # "pause" -> pause of the game
 # "play" -> play the game
 gameStatus = "start"
+bonus_active = False
+bonus_start_time = 0
+
+def render_timer(screen, time_left):
+    font = pygame.font.SysFont(None, 48)
+    time_text = f"{time_left // 60:02}:{time_left % 60:02}"
+    timer_surf = font.render(time_text, True, red)
+    screen.blit(timer_surf, (SCREEN_WIDTH - 150, 10))  # Position at top-right corner
 
 while running:
-    clock.tick(7)  # Limit to 8 FPS
+    clock.tick(4)  # Slower FPS for enemies (now adjusted further)
 
     # Handle events
     for event in pygame.event.get():
@@ -176,6 +250,13 @@ while running:
                     gameStatus = "pause"
             elif event.key == pygame.K_RETURN and gameStatus == "start":
                 gameStatus = "play"
+                start_ticks = pygame.time.get_ticks()  # Reset timer when game starts
+    
+    if gameStatus != "gameover" or gameStatus != "pause":  # Only move and update if the game is not over or pause state
+        # Timer countdown
+        if not bonus_active:
+            seconds_elapsed = (pygame.time.get_ticks() - start_ticks) // 1000
+            time_left = max(0, time_limit - seconds_elapsed)  # Calculate time left
             
     if gameStatus == "play":
         # Handle player movement
@@ -204,7 +285,12 @@ while running:
                     "guards_pos": [(guard.x, guard.y) for guard in guards]
                 }
                 checkpoint_used = False  # Reset the checkpoint usage flag
-        
+
+            # If the player collected a bonus, activate the bonus effect
+            if result == "bonus":
+                bonus_active = True
+                bonus_start_time = pygame.time.get_ticks()
+
         # If the player presses "C" and checkpoint is not yet used, restore the game state
         if keys[pygame.K_c] and checkpoint_state is not None and not checkpoint_used:
             player.x, player.y = checkpoint_state["player_pos"]
@@ -212,9 +298,18 @@ while running:
                 guard.x, guard.y = checkpoint_state["guards_pos"][i]
             checkpoint_used = True  # Mark the checkpoint as used
         
-        # Move guards
+        # Move guards and check for collisions with the player
         for guard in guards:
-            guard.move()
+            if not bonus_active:  # Guards only move if bonus is not active
+                guard.move(player, maze_matrix1)
+            if guard.check_collision(player):
+                gameStatus = "gameOver"  # Freeze the game if a guard catches the player
+        
+        # Deactivate the bonus after 10 seconds
+        if bonus_active and pygame.time.get_ticks() - bonus_start_time >= 10000:  # 10 seconds
+            bonus_active = False
+            # Resume the timer correctly after bonus ends
+            start_ticks += (pygame.time.get_ticks() - bonus_start_time)
     
     if gameStatus == "play" or gameStatus == "pause":
         # Draw the maze
@@ -251,7 +346,11 @@ while running:
                 screen.blit(guard1Up, (guard.x * CELL_SIZE, guard.y * CELL_SIZE))
             elif guard.direction == "down":
                 screen.blit(guard1Down, (guard.x * CELL_SIZE, guard.y * CELL_SIZE))
-                
+        
+        # Render the timer on the screen
+        if not bonus_active:
+            render_timer(screen, time_left)
+        
         # Draw pause text
         if gameStatus == "pause":
             x = (SCREEN_WIDTH-pauseText_width)/2
