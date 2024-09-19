@@ -14,22 +14,26 @@ enemyColor = (255, 0, 0)
 checkPointColor = (0, 0, 255)
 codeColor = (255, 255, 0)
 red = (255, 0, 0)  # Red for timer text
+white = (255, 255, 255)
 
-# Load assets images
+# Load block assets
 # star = pygame.image.load("data/star.png")  # Image of the star bonus
-brick = pygame.image.load("data/brick.png")
-bonus = pygame.image.load("data/bonus.png")
-checkpoint = pygame.image.load("data/checkpoint.png")
-portail = pygame.image.load("data/portail.png")
-metalBlock = pygame.image.load("data/metalBlock.png")
-menu_principal = pygame.image.load("data/menu_principal.png")
-code = pygame.image.load("data/code.png")
-gameover = pygame.image.load("data/gameover.png")
-win = pygame.image.load("data/win.png")
-bomb = pygame.image.load("data/bomb.png")
-metalBlock = pygame.image.load("data/metalBlock.png")
-sand = pygame.image.load("data/sand.png")
-door = pygame.image.load("data/door.png")
+brick = pygame.image.load("data/blocks/brick.png")
+portail = pygame.image.load("data/blocks/portail.png")
+metalBlock = pygame.image.load("data/blocks/metalBlock.png")
+sand = pygame.image.load("data/blocks/sand.png")
+door = pygame.image.load("data/blocks/door.png")
+
+# Load items assets
+checkpoint = pygame.image.load("data/items/checkpoint.png")
+bonus = pygame.image.load("data/items/bonus.png")
+code = pygame.image.load("data/items/code.png")
+bomb = pygame.image.load("data/items/bomb.png")
+
+# Load menu assets
+menu_principal = pygame.image.load("data/menu/menu_principal.png")
+gameover = pygame.image.load("data/menu/gameover.png")
+win = pygame.image.load("data/menu/win.png")
 
 portail_bottom = pygame.image.load("data/portail/portail_bottom.png") # 13
 portail_left_angle = pygame.image.load("data/portail/portail_left_angle.png") # 6
@@ -41,12 +45,12 @@ portail_right_top_angle = pygame.image.load("data/portail/portail_right_top_angl
 portail_top = pygame.image.load("data/portail/portail_top.png") # 7
 portail_center = pygame.image.load("data/portail/portail-center.png") # 14
 
-guard1Down = pygame.image.load("data/guard1.png")
+guard1Down = pygame.image.load("data/people/guard1.png")
 guard1Up = pygame.transform.rotate(guard1Down, 180)
 guard1Left = pygame.transform.rotate(guard1Down, -90)
 guard1Right = pygame.transform.rotate(guard1Down, 90)
 
-spyDown = pygame.image.load("data/spy.png")
+spyDown = pygame.image.load("data/people/spy.png")
 spyUp = pygame.transform.rotate(spyDown, 180)
 spyLeft = pygame.transform.rotate(spyDown, -90)
 spyRight = pygame.transform.rotate(spyDown, 90)
@@ -89,14 +93,14 @@ maze_matrix1 = np.array([
     [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
     [1,0,0,0,0,1,0,0,0,1,1,1,0,0,0,0,0,1,0,0,0,1,0,0,0,0,0,0,0,0,1,0,1,0,0,0,0,0,0,1,6,7,7,7,7,7,8,1],
     [1,0,1,0,0,0,0,1,0,0,0,1,0,1,1,1,0,1,0,1,1,1,0,1,1,1,1,1,0,1,1,0,1,0,1,0,1,1,0,1,9,14,14,14,14,14,11,1],
-    [1,0,1,1,0,0,0,1,1,1,0,1,0,0,0,1,0,1,0,0,0,0,0,1,0,3,0,1,0,0,0,0,1,0,1,0,0,1,0,1,9,14,14,14,14,14,11,1],
+    [1,0,1,1,0,0,0,1,1,1,0,1,0,0,0,1,0,1,0,0,0,0,0,1,0,3,0,1,0,0,0,0,1,0,1,0,0,1,0,1,9,3,14,14,14,14,11,1],
     [1,0,1,0,0,1,0,0,0,1,0,1,0,1,0,1,0,1,1,1,1,0,1,1,0,1,0,1,0,1,1,1,1,0,1,1,1,1,0,1,9,14,14,14,14,14,11,1],
-    [1,0,1,0,1,0,0,0,0,1,0,1,0,1,0,1,0,1,0,0,1,0,1,0,0,1,0,1,0,0,0,0,0,0,1,0,0,1,0,1,9,14,14,14,14,14,11,1],
+    [1,0,1,0,1,0,0,0,0,1,0,1,0,1,0,1,0,1,0,0,1,0,1,0,0,1,0,1,0,0,0,0,0,0,1,0,0,1,0,1,9,2,14,14,14,14,11,1],
     [1,0,1,1,1,1,1,1,0,1,0,1,1,1,0,1,0,1,0,1,1,0,1,0,1,1,0,1,1,1,1,1,0,0,1,0,1,1,0,1,9,14,14,14,14,14,11,1],
-    [1,0,1,0,1,0,0,0,0,1,0,1,0,0,0,1,0,0,0,0,0,0,1,0,1,0,0,0,0,0,0,0,0,1,1,0,1,1,0,1,9,14,14,14,14,14,11,1],
+    [1,0,1,0,1,0,0,0,0,1,0,1,0,0,0,1,0,0,0,0,0,0,1,0,1,0,0,0,0,0,0,0,0,1,1,0,1,1,0,1,9,5,14,14,14,14,11,1],
     [1,0,1,0,1,1,1,1,1,1,0,1,1,1,1,1,0,1,1,1,1,1,1,1,1,0,1,1,1,0,1,1,1,1,0,0,1,1,1,1,9,14,14,14,14,14,11,1],
     [1,0,15,0,0,0,0,0,0,0,0,0,0,0,1,2,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,1,1,0,0,1,9,14,14,14,14,14,11,1],
-    [1,0,0,1,0,1,1,1,0,1,1,1,1,1,1,0,1,1,1,1,0,1,1,1,1,1,0,1,1,1,1,1,0,1,0,0,0,0,0,1,9,14,14,14,14,14,11,1],
+    [1,0,0,1,0,1,1,1,0,1,1,1,1,1,1,0,1,1,1,1,0,1,1,1,1,1,0,1,1,1,1,1,0,1,0,0,0,0,0,1,9,15,14,14,14,14,11,1],
     [1,0,1,1,0,0,1,0,0,1,0,0,0,0,1,0,1,0,0,1,0,1,0,0,0,1,0,1,1,1,0,1,0,1,1,1,1,1,0,1,9,14,14,14,14,14,11,1],
     [1,0,1,0,0,1,1,0,1,1,0,1,1,0,1,0,1,0,0,0,0,1,0,1,1,1,0,0,0,0,0,1,0,1,0,0,0,1,0,1,9,14,14,14,14,14,11,1],
     [1,0,1,0,1,1,0,0,1,1,0,1,0,0,0,0,1,0,1,1,0,1,0,0,0,1,0,1,1,1,0,1,0,1,0,1,1,1,0,1,9,14,14,14,14,14,11,1],
@@ -112,14 +116,14 @@ maze_matrix2 = np.array([
     [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
     [1,0,1,1,1,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,6,7,7,7,7,7,8,1],
     [1,0,0,0,1,0,1,0,1,0,0,0,0,0,1,1,0,0,1,1,1,0,0,0,0,0,0,0,1,0,0,0,1,0,0,1,0,0,0,1,9,14,14,14,14,14,11,1],
-    [1,0,1,0,1,1,1,0,1,0,1,1,1,0,0,1,0,0,1,0,0,1,0,0,0,0,0,0,1,1,1,1,1,0,0,1,0,0,0,1,9,14,14,14,14,14,11,1],
+    [1,0,1,0,1,1,1,0,1,0,1,1,1,0,0,1,0,0,1,0,0,1,0,0,0,0,0,0,1,1,1,1,1,0,0,1,0,0,0,1,9,3,14,14,14,14,11,1],
     [1,0,1,0,0,0,0,0,1,0,0,0,1,1,0,1,0,0,0,0,0,1,1,1,0,0,0,0,1,0,0,0,0,0,0,1,1,1,1,1,9,14,14,14,14,14,11,1],
-    [1,0,1,1,1,1,0,1,1,0,0,0,0,0,0,1,0,0,1,0,0,0,0,0,0,0,1,1,1,1,1,1,0,0,0,1,1,0,0,1,9,14,14,14,14,14,11,1],
+    [1,0,1,1,1,1,0,1,1,0,0,0,0,0,0,1,0,0,1,0,0,0,0,0,0,0,1,1,1,1,1,1,0,0,0,1,1,0,0,1,9,2,14,14,14,14,11,1],
     [1,0,1,0,0,0,0,1,0,0,1,1,1,0,1,1,0,0,1,1,1,1,0,0,0,1,1,0,0,0,0,0,0,0,0,0,0,0,0,1,9,14,14,14,14,14,11,1],
-    [1,0,0,0,1,1,0,0,0,0,0,0,0,0,1,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,9,14,14,14,14,14,11,1],
+    [1,0,0,0,1,1,0,0,0,0,0,0,0,0,1,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,9,5,14,14,14,14,11,1],
     [1,1,1,0,1,0,0,0,1,1,1,1,1,0,0,0,0,1,0,1,0,0,0,0,0,0,0,17,17,17,17,17,17,17,0,0,0,0,0,1,9,14,14,14,14,14,11,1],
     [1,0,1,0,0,0,0,0,0,0,0,0,1,0,0,1,0,1,0,0,0,0,0,0,0,0,0,17,0,0,0,0,0,17,0,0,1,0,1,1,9,14,14,14,14,14,11,1],
-    [1,0,1,0,1,1,1,0,0,0,1,0,1,0,1,1,0,0,0,0,1,1,1,0,0,0,0,17,0,0,16,0,0,17,0,0,1,0,0,1,9,14,14,14,14,14,11,1],
+    [1,0,1,0,1,1,1,0,0,0,1,0,1,0,1,1,0,0,0,0,1,1,1,0,0,0,0,17,0,0,16,0,0,17,0,0,1,0,0,1,9,16,14,14,14,14,11,1],
     [1,0,1,0,1,0,1,0,0,0,1,0,1,0,0,1,0,0,1,0,1,0,0,0,0,0,0,17,0,0,0,0,0,17,0,0,1,0,1,1,9,14,14,14,14,14,11,1],
     [1,16,0,0,0,0,1,1,1,0,1,0,1,0,0,1,0,0,1,1,1,0,0,0,0,0,0,17,0,0,0,0,0,17,0,0,1,0,0,1,9,14,14,14,14,14,11,1],
     [1,0,0,1,1,0,0,0,0,0,1,0,0,0,1,1,0,0,1,0,0,0,0,0,0,0,0,17,17,17,0,17,17,17,0,0,1,0,0,1,9,14,14,14,14,14,11,1],
@@ -157,18 +161,20 @@ start_ticks = pygame.time.get_ticks() # Store the starting time
 # Directions for A* (up, down, left, right)
 DIRECTIONS = [(0, 1), (1, 0), (0, -1), (-1, 0)]
 
-# # Place the bonus at a random 0 cell in the maze
-# bonus_position = (7, 12)  # Example of a random position (7th row, 12th column)
-# current_maze[bonus_position[0], bonus_position[1]] = 3  # Set the bonus value to 3
-
-# Place the code!
-# code_position = (10, 2)
-# current_maze[code_position[0], code_position[1]] = 15
+# Load a custom font from a file
+pixelFont = pygame.font.Font("data/font/pixelFont.otf", 18)
 
 # Font
-font = pygame.font.SysFont("Arial", 74)
-pauseText = font.render('Pause', True, (0, 0, 0))
+fontPause = pygame.font.SysFont("Arial", 74)
+pauseText = fontPause.render('Pause', True, (0, 0, 0))
 pauseText_width, pauseText_height = pauseText.get_size()
+
+bonusText = pixelFont.render(': Stop le temps', True, (255, 255, 255)) #pause de 10 secondes
+checkpointText = pixelFont.render(': Point de sauvegarde ', True, (255, 255, 255))
+portailText = pixelFont.render(': Placement de', True, (255, 255, 255))
+portailText2 = pixelFont.render('  sauvegarde', True, (255, 255, 255))
+codeText = pixelFont.render(': Code de la bombe', True, (255, 255, 255))
+bombeText = pixelFont.render(': Bombe', True, (255, 255, 255))
 
 # Position of the code ( random )
 codePositionX = 0
@@ -228,6 +234,11 @@ def a_star(maze, start, goal):
 
     return []  # Return empty path if no path found
 
+def render_timer(screen, time_left):
+    font = pygame.font.SysFont(None, 48)
+    time_text = f"{time_left // 60:02}:{time_left % 60:02}"
+    timer_surf = font.render(time_text, True, white)
+    screen.blit(timer_surf, (Screen_width - 185, 45))  # Position at top-right corner
 
 # Define the player
 class Player:
@@ -334,8 +345,7 @@ guardsLevel2 = [
 ]
 
 def update_current_maze():
-    global guards
-    global current_maze, maze_height, maze_width, Screen_width, Screen_height
+    global current_maze, maze_height, maze_width, Screen_width, Screen_height, guards
     if current_level==1:
         current_maze = maze_matrix1
         guards = guardsLavel1
@@ -356,6 +366,7 @@ for y in range(player_start_y, maze_height):
 
 player = Player(1, player_start_y, speed=1)
 
+# Initialize the guards used at start
 guards = guardsLavel1
 
 # Initialize checkpoint state storage
@@ -373,14 +384,9 @@ bonus_active = False
 bonus_start_time = 0
 code_gathered = False
 
+# level 2 finale door location
 level2DoorX = 38
 level2DoorY = 10
-
-def render_timer(screen, time_left):
-    font = pygame.font.SysFont(None, 48)
-    time_text = f"{time_left // 60:02}:{time_left % 60:02}"
-    timer_surf = font.render(time_text, True, red)
-    screen.blit(timer_surf, (Screen_width - 150, 10))  # Position at top-right corner
 
 while running:
     clock.tick(5)  # Slower FPS for enemies (now adjusted further)
@@ -448,12 +454,12 @@ while running:
                 sound_checkpoint.play()
 
             # If the player collected a bonus, activate the bonus effect
-            if result == "bonus":
+            elif result == "bonus":
                 bonus_active = True
                 bonus_start_time = pygame.time.get_ticks()
                 sound_bonus.play()
                 
-            if result == "code":
+            elif result == "code":
                 code_gathered = True
                 current_level = 2
                 update_current_maze()
@@ -461,8 +467,8 @@ while running:
                 player.y = player_start_y
                 sound_code.play()
             
-            if result == "door":
-                gameStatus = "win"                
+            elif result == "door":
+                gameStatus = "win"
 
         # If the player presses "C" and checkpoint is not yet used, restore the game state
         if keys[pygame.K_c] and checkpoint_state is not None and not checkpoint_used:
@@ -560,6 +566,11 @@ while running:
                         
                     
         if current_level == 1:
+            # codeText
+            x = (1350)
+            y = (326)
+            screen.blit(codeText, (x, y))
+            
             for y in range(maze_height):
                 for x in range(maze_width):
                     rect = pygame.Rect(x * CELL_SIZE, y * CELL_SIZE, CELL_SIZE, CELL_SIZE)
@@ -567,7 +578,13 @@ while running:
                     image_y = y * CELL_SIZE
                     if current_maze[y, x] == 1:
                         screen.blit(brick, (image_x, image_y))
+            
         elif current_level==2:
+            # bombeText
+            x = (1350)
+            y = (326)
+            screen.blit(bombeText, (x, y))
+            
             for y in range(maze_height):
                 for x in range(maze_width):
                     rect = pygame.Rect(x * CELL_SIZE, y * CELL_SIZE, CELL_SIZE, CELL_SIZE)
@@ -577,7 +594,7 @@ while running:
                         screen.blit(metalBlock, (image_x, image_y))
             if bombDesamorced:
                 screen.blit(door, (level2DoorX * CELL_SIZE, level2DoorY * CELL_SIZE))
-                    
+            
         # Draw the player
         if player.direction == "left":
             screen.blit(spyLeft, (player.x * CELL_SIZE, player.y * CELL_SIZE))
@@ -607,7 +624,26 @@ while running:
             x = (Screen_width-pauseText_width)/2
             y = (Screen_height-pauseText_height)/2
             screen.blit(pauseText, (x, y))
-    
+
+        # Draw help text
+        # bonus
+        x = (1350)
+        y = (102)
+        screen.blit(bonusText, (x, y))
+
+        # checkpoint
+        x = (1350)
+        y = (166)
+        screen.blit(checkpointText, (x, y))
+
+        # portailText
+        x = (1350)
+        y = (230)
+        screen.blit(portailText, (x, y))
+        x = (1350)
+        y = (262)
+        screen.blit(portailText2, (x, y))
+        
     if gameStatus == "start":
         screen.blit(menu_principal, (0, 0))
     elif gameStatus == "gameover":
