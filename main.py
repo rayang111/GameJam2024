@@ -24,6 +24,8 @@ portail = pygame.image.load("data/portail.png")
 metalBlock = pygame.image.load("data/metalBlock.png")
 menu_principal = pygame.image.load("data/menu_principal.png")
 code = pygame.image.load("data/code.png")
+gameover = pygame.image.load("data/gameover.png")
+win = pygame.image.load("data/win.png")
 
 portail_bottom = pygame.image.load("data/portail/portail_bottom.png") # 13
 portail_left_angle = pygame.image.load("data/portail/portail_left_angle.png") # 6
@@ -493,6 +495,10 @@ while running:
     
     elif gameStatus == "start":
         screen.blit(menu_principal, (0, 0))
+    elif gameStatus == "gameover":
+        screen.blit(gameover, (0, 0))
+    elif gameStatus == "win":
+        screen.blit(win, (0, 0))
     
     # Update the display
     pygame.display.flip()
