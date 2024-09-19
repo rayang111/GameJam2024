@@ -48,6 +48,20 @@ spyUp = pygame.transform.rotate(spyDown, 180)
 spyLeft = pygame.transform.rotate(spyDown, -90)
 spyRight = pygame.transform.rotate(spyDown, 90)
 
+# Sounds
+sound_alert = pygame.mixer.Sound("sounds/alert.wav")
+sound_begin = pygame.mixer.Sound("sounds/begin.wav")
+sound_pause = pygame.mixer.Sound("sounds/pause.wav")
+sound_time_is_running = pygame.mixer.Sound("sounds/time_is_running.wav")
+sound_unpause = pygame.mixer.Sound("sounds/unpause.wav")
+sound_win_alert = pygame.mixer.Sound("sounds/win.wav")
+music = pygame.mixer.Sound("sounds/background_music.wav")
+sound_checkpoint = pygame.mixer.Sound("sounds/checkpoint.wav")
+sound_bonus = pygame.mixer.Sound("sounds/bonus.wav")
+sound_win = pygame.mixer.Sound("sounds/win.wav")
+sound_game_over = pygame.mixer.Sound("sounds/gameover.wav")
+sound_code = pygame.mixer.Sound("sounds/sound_code.wav")
+
 # Screen_width = 1536
 # Screen_height = 640
 # 48
@@ -345,17 +359,28 @@ while running:
             if event.key == pygame.K_ESCAPE:
                 if gameStatus == "pause":
                     gameStatus = "play"
+                    sound_unpause.play()
                 elif gameStatus == "play":
                     gameStatus = "pause"
+                    sound_pause.play()
             elif event.key == pygame.K_RETURN and gameStatus == "start":
                 gameStatus = "play"
                 start_ticks = pygame.time.get_ticks()  # Reset timer when game starts
+                sound_begin.play()
+                music.play(loops=-1)
     
     if gameStatus == "play" and not bonus_active:  # Only move and update if the game is not over or pause state
         # Timer countdown
         if not bonus_active:
             seconds_elapsed = (pygame.time.get_ticks() - start_ticks) // 1000
             time_left = max(0, time_limit - seconds_elapsed)  # Calculate time left
+
+            if time_left <= 10:
+                sound_time_is_running.play()
+                music.set_volume(0.2)
+            if time_left == 0:
+                sound_time_is_running.stop()
+                music.stop()
         
     if gameStatus == "play":
         # Handle player movement
@@ -386,11 +411,13 @@ while running:
                 checkpoint_ticks = pygame.time.get_ticks()
                 checkpoint_time_left = time_left
                 checkpoint_used = False  # Reset the checkpoint usage flag
+                sound_checkpoint.play()
 
             # If the player collected a bonus, activate the bonus effect
             if result == "bonus":
                 bonus_active = True
                 bonus_start_time = pygame.time.get_ticks()
+                sound_bonus.play()
                 
             if result == "code":
                 code_gathered = True
@@ -398,6 +425,7 @@ while running:
                 update_current_maze()
                 player.x = 1
                 player.y = player_start_y
+                sound_code.play()
 
         # If the player presses "C" and checkpoint is not yet used, restore the game state
         if keys[pygame.K_c] and checkpoint_state is not None and not checkpoint_used:
@@ -490,7 +518,7 @@ while running:
                     screen.blit(portail_center, (image_x, image_y))
                 elif current_maze[y, x] == 15:  # Afficher l'item code à cet emplacement
                     screen.blit(code, (image_x, image_y))
-                elif current_maze[y, x] == 15:  # Afficher l'item de la bombe
+                elif current_maze[y, x] == 16:  # Afficher l'item de la bombe
                     screen.blit(code, (image_x, image_y))
         
         # Draw the player
@@ -523,12 +551,14 @@ while running:
             y = (Screen_height-pauseText_height)/2
             screen.blit(pauseText, (x, y))
     
-    elif gameStatus == "start":
+    if gameStatus == "start":
         screen.blit(menu_principal, (0, 0))
     elif gameStatus == "gameover":
         screen.blit(gameover, (0, 0))
+        sound_game_over.play()
     elif gameStatus == "win":
         screen.blit(win, (0, 0))
+        sound_win.play()
     
     # Update the display
     pygame.display.flip()
