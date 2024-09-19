@@ -228,6 +228,8 @@ running = True
 gameStatus = "start"
 bonus_active = False
 bonus_start_time = 0
+code_gathered = False
+current_level = 1
 
 def render_timer(screen, time_left):
     font = pygame.font.SysFont(None, 48)
@@ -290,6 +292,13 @@ while running:
             if result == "bonus":
                 bonus_active = True
                 bonus_start_time = pygame.time.get_ticks()
+
+            if result == "code":
+                code_gathered = True
+                current_level = 2
+                # dans la fonction, on doit 
+                #load_level(current_level)
+
 
         # If the player presses "C" and checkpoint is not yet used, restore the game state
         if keys[pygame.K_c] and checkpoint_state is not None and not checkpoint_used:
