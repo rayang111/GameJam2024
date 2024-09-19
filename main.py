@@ -240,7 +240,7 @@ def render_timer(screen, time_left):
     screen.blit(timer_surf, (SCREEN_WIDTH - 150, 10))  # Position at top-right corner
 
 while running:
-    clock.tick(4)  # Slower FPS for enemies (now adjusted further)
+    clock.tick(5)  # Slower FPS for enemies (now adjusted further)
 
     # Handle events
     for event in pygame.event.get():
@@ -256,12 +256,12 @@ while running:
                 gameStatus = "play"
                 start_ticks = pygame.time.get_ticks()  # Reset timer when game starts
     
-    if gameStatus != "gameover" or gameStatus != "pause":  # Only move and update if the game is not over or pause state
+    if gameStatus == "play" and not bonus_active:  # Only move and update if the game is not over or pause state
         # Timer countdown
         if not bonus_active:
             seconds_elapsed = (pygame.time.get_ticks() - start_ticks) // 1000
             time_left = max(0, time_limit - seconds_elapsed)  # Calculate time left
-            
+        
     if gameStatus == "play":
         # Handle player movement
         keys = pygame.key.get_pressed()
@@ -307,7 +307,7 @@ while running:
             if not bonus_active:  # Guards only move if bonus is not active
                 guard.move(player, maze_matrix1)
             if guard.check_collision(player):
-                gameStatus = "gameOver"  # Freeze the game if a guard catches the player
+                gameStatus = "gameover"  # Freeze the game if a guard catches the player
         
         # Deactivate the bonus after 10 seconds
         if bonus_active and pygame.time.get_ticks() - bonus_start_time >= 10000:  # 10 seconds
@@ -315,7 +315,7 @@ while running:
             # Resume the timer correctly after bonus ends
             start_ticks += (pygame.time.get_ticks() - bonus_start_time)
     
-    if gameStatus == "play" or gameStatus == "pause":
+    if gameStatus == "play" or gameStatus == "pause" or gameStatus=="gameover":
         # Draw the maze
         screen.fill(backgroundColor)
         for y in range(MAZE_HEIGHT):
@@ -354,8 +354,7 @@ while running:
                 screen.blit(guard1Down, (guard.x * CELL_SIZE, guard.y * CELL_SIZE))
         
         # Render the timer on the screen
-        if not bonus_active:
-            render_timer(screen, time_left)
+        render_timer(screen, time_left)
         
         # Draw pause text
         if gameStatus == "pause":
