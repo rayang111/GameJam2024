@@ -26,6 +26,7 @@ menu_principal = pygame.image.load("data/menu_principal.png")
 code = pygame.image.load("data/code.png")
 gameover = pygame.image.load("data/gameover.png")
 win = pygame.image.load("data/win.png")
+bomb = pygame.image.load("data/bomb.png")
 
 portail_bottom = pygame.image.load("data/portail/portail_bottom.png") # 13
 portail_left_angle = pygame.image.load("data/portail/portail_left_angle.png") # 6
@@ -225,7 +226,7 @@ class Player:
         new_x = self.x + dx * self.speed
         new_y = self.y + dy * self.speed
         if 0 <= new_x < maze_width and 0 <= new_y < maze_height:
-            if current_maze[new_y, new_x] == 0 or current_maze[new_y, new_x] in (2, 3, 15):  # Walk on bonus or checkpoint:
+            if current_maze[new_y, new_x] == 0 or current_maze[new_y, new_x] in (2, 3, 4, 5, 15):  # Walk on bonus or checkpoint:
                 self.x = new_x
                 self.y = new_y
                 
@@ -410,6 +411,33 @@ while running:
             checkpoint_used = True  # Mark the checkpoint as used
             pygame.time.wait(50)
         
+        guardPos = []
+        # Check if the guard see the player and if so, chase the player
+        for guard in guards:
+            guardX = guard.x
+            guardY = guard.y
+            direction = guard.direction
+            if (guard.y-player.y)>0 and direction=="up":
+                while(current_maze[guardY,guardX]!=1):
+                    guardY = guardY-1
+                    guardPos.append([guardX,guardY])
+            elif (guard.y-player.y)<0 and direction=="down":
+                while(current_maze[guardY,guardX]!=1):
+                    guardY = guardY+1
+                    guardPos.append([guardX,guardY])
+            elif (guard.x-player.x)>0 and direction=="left":
+                while(current_maze[guardY,guardX]!=1):
+                    guardX = guardX-1
+                    guardPos.append([guardX,guardY])
+            elif (guard.x-player.x)<0 and direction=="right":
+                while(current_maze[guardY,guardX]!=1):
+                    guardX = guardX+1
+                    guardPos.append([guardX,guardY])
+        
+        for guardP in guardPos:
+            if guardP[0] == player.x and guardP[1] == player.y or guardP[0] == player.x and guardP[1] == player.y:
+                chasing = True
+        
         # Move guards and check for collisions with the player
         for guard in guards:
             if not bonus_active:  # Guards only move if bonus is not active
@@ -461,6 +489,8 @@ while running:
                 elif current_maze[y, x] == 14:
                     screen.blit(portail_center, (image_x, image_y))
                 elif current_maze[y, x] == 15:  # Afficher l'item code à cet emplacement
+                    screen.blit(code, (image_x, image_y))
+                elif current_maze[y, x] == 15:  # Afficher l'item de la bombe
                     screen.blit(code, (image_x, image_y))
         
         # Draw the player
