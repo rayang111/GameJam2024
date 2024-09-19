@@ -16,6 +16,7 @@ codeColor = (255, 255, 0)
 red = (255, 0, 0)  # Red for timer text
 
 # Load assets images
+# star = pygame.image.load("data/star.png")  # Image of the star bonus
 brick = pygame.image.load("data/brick.png")
 bonus = pygame.image.load("data/bonus.png")
 checkpoint = pygame.image.load("data/checkpoint.png")
@@ -157,6 +158,9 @@ class Player:
                 elif maze_matrix1[new_y, new_x] == 3:  # Bonus
                     maze_matrix1[new_y, new_x] = 0
                     return "bonus"
+                elif maze_matrix1[new_y, new_x] == 4:  # Star
+                    maze_matrix1[new_y, new_x] = 0
+                    return 'star'
         return None
 
 # Guard class
@@ -325,6 +329,8 @@ while running:
                     screen.blit(checkpoint, (image_x, image_y))
                 elif maze_matrix1[y, x] == 3:  # Afficher l'item bonus à cet emplacement
                     screen.blit(bonus, (image_x, image_y))
+                # elif maze_matrix1[y, x] == 4:  # Show star at this location
+                #     screen.blit(star, (image_x, image_y))
 
         # Draw the player
         if player.direction == "left":
