@@ -27,6 +27,9 @@ code = pygame.image.load("data/code.png")
 gameover = pygame.image.load("data/gameover.png")
 win = pygame.image.load("data/win.png")
 bomb = pygame.image.load("data/bomb.png")
+metalBlock = pygame.image.load("data/metalBlock.png")
+sand = pygame.image.load("data/sand.png")
+door = pygame.image.load("data/door.png")
 
 portail_bottom = pygame.image.load("data/portail/portail_bottom.png") # 13
 portail_left_angle = pygame.image.load("data/portail/portail_left_angle.png") # 6
@@ -62,6 +65,20 @@ sound_win = pygame.mixer.Sound("sounds/win.wav")
 sound_game_over = pygame.mixer.Sound("sounds/gameover.wav")
 sound_code = pygame.mixer.Sound("sounds/sound_code.wav")
 
+# Sounds
+sound_alert = pygame.mixer.Sound("sounds/alert.wav")
+sound_begin = pygame.mixer.Sound("sounds/begin.wav")
+sound_pause = pygame.mixer.Sound("sounds/pause.wav")
+sound_time_is_running = pygame.mixer.Sound("sounds/time_is_running.wav")
+sound_unpause = pygame.mixer.Sound("sounds/unpause.wav")
+sound_win_alert = pygame.mixer.Sound("sounds/win.wav")
+music = pygame.mixer.Sound("sounds/background_music.wav")
+sound_checkpoint = pygame.mixer.Sound("sounds/checkpoint.wav")
+sound_bonus = pygame.mixer.Sound("sounds/bonus.wav")
+sound_win = pygame.mixer.Sound("sounds/win.wav")
+sound_game_over = pygame.mixer.Sound("sounds/gameover.wav")
+sound_code = pygame.mixer.Sound("sounds/sound_code.wav")
+
 # Screen_width = 1536
 # Screen_height = 640
 # 48
@@ -78,7 +95,7 @@ maze_matrix1 = np.array([
     [1,0,1,1,1,1,1,1,0,1,0,1,1,1,0,1,0,1,0,1,1,0,1,0,1,1,0,1,1,1,1,1,0,0,1,0,1,1,0,1,9,14,14,14,14,14,11,1],
     [1,0,1,0,1,0,0,0,0,1,0,1,0,0,0,1,0,0,0,0,0,0,1,0,1,0,0,0,0,0,0,0,0,1,1,0,1,1,0,1,9,14,14,14,14,14,11,1],
     [1,0,1,0,1,1,1,1,1,1,0,1,1,1,1,1,0,1,1,1,1,1,1,1,1,0,1,1,1,0,1,1,1,1,0,0,1,1,1,1,9,14,14,14,14,14,11,1],
-    [1,0,0,0,0,0,0,0,0,0,0,0,0,0,1,2,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,1,1,0,0,1,9,14,14,14,14,14,11,1],
+    [1,0,15,0,0,0,0,0,0,0,0,0,0,0,1,2,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,1,1,0,0,1,9,14,14,14,14,14,11,1],
     [1,0,0,1,0,1,1,1,0,1,1,1,1,1,1,0,1,1,1,1,0,1,1,1,1,1,0,1,1,1,1,1,0,1,0,0,0,0,0,1,9,14,14,14,14,14,11,1],
     [1,0,1,1,0,0,1,0,0,1,0,0,0,0,1,0,1,0,0,1,0,1,0,0,0,1,0,1,1,1,0,1,0,1,1,1,1,1,0,1,9,14,14,14,14,14,11,1],
     [1,0,1,0,0,1,1,0,1,1,0,1,1,0,1,0,1,0,0,0,0,1,0,1,1,1,0,0,0,0,0,1,0,1,0,0,0,1,0,1,9,14,14,14,14,14,11,1],
@@ -87,7 +104,7 @@ maze_matrix1 = np.array([
     [1,0,1,1,0,1,0,1,0,1,1,1,0,0,1,0,1,0,0,1,0,1,0,0,1,0,0,1,0,0,0,1,0,1,0,0,0,1,0,1,9,14,14,14,14,14,11,1],
     [1,0,0,1,0,1,0,1,0,0,0,1,0,1,1,0,1,0,0,0,0,1,1,0,0,1,0,1,1,0,1,1,0,1,0,1,0,1,1,1,9,14,14,14,14,14,11,1],
     [1,0,1,1,0,1,3,1,1,1,1,1,0,0,1,0,1,0,1,1,0,0,1,1,0,1,0,3,0,0,0,1,0,1,1,1,0,0,0,1,9,14,14,14,14,14,11,1],
-    [1,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,0,0,0,0,0,0,1,1,1,0,0,0,0,0,0,0,1,1,1,10,13,13,13,13,13,12,1],
+    [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,0,0,0,0,0,0,1,1,1,0,0,0,0,0,0,0,1,1,1,10,13,13,13,13,13,12,1],
     [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]
 ])
 
@@ -100,12 +117,12 @@ maze_matrix2 = np.array([
     [1,0,1,1,1,1,0,1,1,0,0,0,0,0,0,1,0,0,1,0,0,0,0,0,0,0,1,1,1,1,1,1,0,0,0,1,1,0,0,1,9,14,14,14,14,14,11,1],
     [1,0,1,0,0,0,0,1,0,0,1,1,1,0,1,1,0,0,1,1,1,1,0,0,0,1,1,0,0,0,0,0,0,0,0,0,0,0,0,1,9,14,14,14,14,14,11,1],
     [1,0,0,0,1,1,0,0,0,0,0,0,0,0,1,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,9,14,14,14,14,14,11,1],
-    [1,1,1,0,1,0,0,0,1,1,1,1,1,0,0,0,0,1,0,1,0,0,0,0,0,0,0,1,1,1,1,1,1,1,0,0,0,0,0,1,9,14,14,14,14,14,11,1],
-    [1,0,1,0,0,0,0,0,0,0,0,0,1,0,0,1,0,1,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,1,0,0,1,0,0,1,9,14,14,14,14,14,11,1],
-    [1,0,1,0,1,1,1,0,0,0,1,0,1,0,1,1,0,0,0,0,1,1,1,0,0,0,0,1,0,0,0,0,0,1,0,0,1,0,0,1,9,14,14,14,14,14,11,1],
-    [1,0,1,0,1,0,1,0,0,0,1,0,1,0,0,1,0,0,1,0,1,0,0,0,0,0,0,1,0,0,0,0,0,1,0,0,1,0,0,1,9,14,14,14,14,14,11,1],
-    [1,0,0,0,0,0,1,1,1,0,1,0,1,0,0,1,0,0,1,1,1,0,0,0,0,0,0,1,0,0,0,0,0,1,0,0,1,0,0,1,9,14,14,14,14,14,11,1],
-    [1,0,0,1,1,0,0,0,0,0,1,0,0,0,1,1,0,0,1,0,0,0,0,0,0,0,0,1,1,1,0,1,1,1,0,0,1,0,0,1,9,14,14,14,14,14,11,1],
+    [1,1,1,0,1,0,0,0,1,1,1,1,1,0,0,0,0,1,0,1,0,0,0,0,0,0,0,17,17,17,17,17,17,17,0,0,0,0,0,1,9,14,14,14,14,14,11,1],
+    [1,0,1,0,0,0,0,0,0,0,0,0,1,0,0,1,0,1,0,0,0,0,0,0,0,0,0,17,0,0,0,0,0,17,0,0,1,0,1,1,9,14,14,14,14,14,11,1],
+    [1,0,1,0,1,1,1,0,0,0,1,0,1,0,1,1,0,0,0,0,1,1,1,0,0,0,0,17,0,0,16,0,0,17,0,0,1,0,0,1,9,14,14,14,14,14,11,1],
+    [1,0,1,0,1,0,1,0,0,0,1,0,1,0,0,1,0,0,1,0,1,0,0,0,0,0,0,17,0,0,0,0,0,17,0,0,1,0,1,1,9,14,14,14,14,14,11,1],
+    [1,16,0,0,0,0,1,1,1,0,1,0,1,0,0,1,0,0,1,1,1,0,0,0,0,0,0,17,0,0,0,0,0,17,0,0,1,0,0,1,9,14,14,14,14,14,11,1],
+    [1,0,0,1,1,0,0,0,0,0,1,0,0,0,1,1,0,0,1,0,0,0,0,0,0,0,0,17,17,17,0,17,17,17,0,0,1,0,0,1,9,14,14,14,14,14,11,1],
     [1,0,1,1,1,1,1,0,0,0,1,0,0,0,1,0,0,1,0,0,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,9,14,14,14,14,14,11,1],
     [1,0,1,0,0,0,0,0,1,0,1,1,1,0,0,1,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,9,14,14,14,14,14,11,1],
     [1,0,1,0,1,0,1,0,0,0,1,0,1,1,0,0,0,0,1,0,0,0,0,1,0,0,0,0,0,0,0,1,1,1,1,1,0,0,0,1,9,14,14,14,14,14,11,1],
@@ -127,29 +144,10 @@ maze_height, maze_width = current_maze.shape
 Screen_width = maze_width * CELL_SIZE
 Screen_height = maze_height * CELL_SIZE
 
-def update_current_maze():
-    global current_maze, maze_height, maze_width, Screen_width, Screen_height
-    if current_level==1:
-        current_maze = maze_matrix1
-    elif current_level==2:
-        current_maze = maze_matrix2
-    maze_height, maze_width = current_maze.shape
-    # Screen dimensions
-    Screen_width = maze_width * CELL_SIZE
-    Screen_height = maze_height * CELL_SIZE
-
 
 # Create the screen
 screen = pygame.display.set_mode((Screen_width, Screen_height))
 pygame.display.set_caption("ChronoSpy")
-
-# Guards initial positions
-guardsMap1 = [
-    [16, 4, "guard1", "left"],
-    [9, 14, "guard1", "left"],
-    [19, 16, "guard1", "left"],
-    [28, 12, "guard1", "left"]
-]
 
 # Timer settings (3 minutes in seconds)
 time_limit = 2 * 60  
@@ -188,6 +186,9 @@ if current_level==1:
 
 # Chasing
 chasing = False
+
+# Bomb state
+bombDesamorced = False
 
 # Heuristic function for A* (Manhattan distance)
 def heuristic(a, b):
@@ -237,10 +238,11 @@ class Player:
         self.speed = speed
 
     def move(self, dx, dy):
+        global bombDesamorced
         new_x = self.x + dx * self.speed
         new_y = self.y + dy * self.speed
         if 0 <= new_x < maze_width and 0 <= new_y < maze_height:
-            if current_maze[new_y, new_x] == 0 or current_maze[new_y, new_x] in (2, 3, 4, 5, 15):  # Walk on bonus or checkpoint:
+            if current_maze[new_y, new_x] == 0 or current_maze[new_y, new_x] in (2, 3, 4, 5, 15, 16):  # Walk on bonus or checkpoint:
                 self.x = new_x
                 self.y = new_y
                 
@@ -257,6 +259,13 @@ class Player:
                 elif current_maze[new_y, new_x] == 15:  # Code
                     current_maze[new_y, new_x] = 0
                     return "code"
+                elif current_maze[new_y, new_x] == 16:  # Bomb
+                    current_maze[new_y, new_x] = 0
+                    bombDesamorced = True
+                    return "bomb"
+                elif current_maze[new_y, new_x] == 17:  # Door
+                    current_maze[new_y, new_x] = 0
+                    return "door"
         return None
 
 # Guard class
@@ -310,6 +319,34 @@ class Guard:
     def check_collision(self, player):
         return self.x == player.x and self.y == player.y
 
+# Guards initial positions and speed
+guardsLavel1 = [
+    Guard(16, 4, "left", speed=2),
+    Guard(9, 14, "left", speed=2),
+    Guard(19, 16, "left", speed=2),
+    Guard(28, 12, "left", speed=2)
+]
+guardsLevel2 = [
+    Guard(11, 3, "left", speed=2),
+    Guard(6, 19, "left", speed=2),
+    Guard(38, 4, "left", speed=2),
+    Guard(16, 2, "left", speed=2)
+]
+
+def update_current_maze():
+    global guards
+    global current_maze, maze_height, maze_width, Screen_width, Screen_height
+    if current_level==1:
+        current_maze = maze_matrix1
+        guards = guardsLavel1
+    elif current_level==2:
+        current_maze = maze_matrix2
+        guards = guardsLevel2
+    maze_height, maze_width = current_maze.shape
+    # Screen dimensions
+    Screen_width = maze_width * CELL_SIZE
+    Screen_height = maze_height * CELL_SIZE
+
 # Initialize the player at middle left of the labyrinth
 player_start_y = maze_height // 2
 for y in range(player_start_y, maze_height):
@@ -319,13 +356,7 @@ for y in range(player_start_y, maze_height):
 
 player = Player(1, player_start_y, speed=1)
 
-# Guards initial positions and speed
-guards = [
-    Guard(16, 4, "left", speed=2),
-    Guard(9, 14, "left", speed=2),
-    Guard(19, 16, "left", speed=2),
-    Guard(28, 12, "left", speed=2)
-]
+guards = guardsLavel1
 
 # Initialize checkpoint state storage
 checkpoint_state = None
@@ -341,6 +372,9 @@ gameStatus = "start"
 bonus_active = False
 bonus_start_time = 0
 code_gathered = False
+
+level2DoorX = 38
+level2DoorY = 10
 
 def render_timer(screen, time_left):
     font = pygame.font.SysFont(None, 48)
@@ -426,6 +460,9 @@ while running:
                 player.x = 1
                 player.y = player_start_y
                 sound_code.play()
+            
+            if result == "door":
+                gameStatus = "win"                
 
         # If the player presses "C" and checkpoint is not yet used, restore the game state
         if keys[pygame.K_c] and checkpoint_state is not None and not checkpoint_used:
@@ -483,44 +520,64 @@ while running:
         # Draw the maze
         screen.fill(backgroundColor)
         for y in range(maze_height):
-            for x in range(maze_width):
-                rect = pygame.Rect(x * CELL_SIZE, y * CELL_SIZE, CELL_SIZE, CELL_SIZE)
-                image_x = x * CELL_SIZE
-                image_y = y * CELL_SIZE
-                if current_maze[y, x] == 1:
-                    screen.blit(brick, (image_x, image_y))
-                elif current_maze[y, x] == 2:  # Afficher l'item checkpoint à cet emplacement
-                    screen.blit(checkpoint, (image_x, image_y))
-                elif current_maze[y, x] == 3:  # Afficher l'item bonus à cet emplacement
-                    screen.blit(bonus, (image_x, image_y))
-                # elif current_maze[y, x] == 4:  # Show star at this location
-                #     screen.blit(star, (image_x, image_y))
-                elif current_maze[y, x] == 5:  # Afficher le checkpoint sauvegarde
-                    screen.blit(portail, (image_x, image_y))
-                # Afficher l'arriere plan
-                elif current_maze[y, x] == 6:
-                    screen.blit(portail_left_angle, (image_x, image_y))
-                elif current_maze[y, x] == 7:
-                    screen.blit(portail_top, (image_x, image_y))
-                elif current_maze[y, x] == 8:
-                    screen.blit(portail_right_top_angle, (image_x, image_y))
-                elif current_maze[y, x] == 9:
-                    screen.blit(portail_left, (image_x, image_y))
-                elif current_maze[y, x] == 10:
-                    screen.blit(portail_left_bootom_angle, (image_x, image_y))
-                elif current_maze[y, x] == 11:
-                    screen.blit(portail_right, (image_x, image_y))
-                elif current_maze[y, x] == 12:
-                    screen.blit(portail_right_bottom_angle, (image_x, image_y))
-                elif current_maze[y, x] == 13:
-                    screen.blit(portail_bottom, (image_x, image_y))
-                elif current_maze[y, x] == 14:
-                    screen.blit(portail_center, (image_x, image_y))
-                elif current_maze[y, x] == 15:  # Afficher l'item code à cet emplacement
-                    screen.blit(code, (image_x, image_y))
-                elif current_maze[y, x] == 16:  # Afficher l'item de la bombe
-                    screen.blit(code, (image_x, image_y))
-        
+                for x in range(maze_width):
+                    rect = pygame.Rect(x * CELL_SIZE, y * CELL_SIZE, CELL_SIZE, CELL_SIZE)
+                    image_x = x * CELL_SIZE
+                    image_y = y * CELL_SIZE
+                    if current_maze[y, x] == 2:  # Afficher l'item checkpoint à cet emplacement
+                        screen.blit(checkpoint, (image_x, image_y))
+                    elif current_maze[y, x] == 3:  # Afficher l'item bonus à cet emplacement
+                        screen.blit(bonus, (image_x, image_y))
+                    # elif current_maze[y, x] == 4:  # Show star at this location
+                    #     screen.blit(star, (image_x, image_y))
+                    elif current_maze[y, x] == 5:  # Afficher le checkpoint sauvegarde
+                        screen.blit(portail, (image_x, image_y))
+                    # Afficher l'arriere plan
+                    elif current_maze[y, x] == 6:
+                        screen.blit(portail_left_angle, (image_x, image_y))
+                    elif current_maze[y, x] == 7:
+                        screen.blit(portail_top, (image_x, image_y))
+                    elif current_maze[y, x] == 8:
+                        screen.blit(portail_right_top_angle, (image_x, image_y))
+                    elif current_maze[y, x] == 9:
+                        screen.blit(portail_left, (image_x, image_y))
+                    elif current_maze[y, x] == 10:
+                        screen.blit(portail_left_bootom_angle, (image_x, image_y))
+                    elif current_maze[y, x] == 11:
+                        screen.blit(portail_right, (image_x, image_y))
+                    elif current_maze[y, x] == 12:
+                        screen.blit(portail_right_bottom_angle, (image_x, image_y))
+                    elif current_maze[y, x] == 13:
+                        screen.blit(portail_bottom, (image_x, image_y))
+                    elif current_maze[y, x] == 14:
+                        screen.blit(portail_center, (image_x, image_y))
+                    elif current_maze[y, x] == 15:  # Afficher l'item code à cet emplacement
+                        screen.blit(code, (image_x, image_y))
+                    elif current_maze[y, x] == 16:  # Afficher l'item de la bombe
+                        screen.blit(bomb, (image_x, image_y))
+                    elif current_maze[y, x] == 17: # Brick sable
+                        screen.blit(sand, (image_x, image_y))
+                        
+                    
+        if current_level == 1:
+            for y in range(maze_height):
+                for x in range(maze_width):
+                    rect = pygame.Rect(x * CELL_SIZE, y * CELL_SIZE, CELL_SIZE, CELL_SIZE)
+                    image_x = x * CELL_SIZE
+                    image_y = y * CELL_SIZE
+                    if current_maze[y, x] == 1:
+                        screen.blit(brick, (image_x, image_y))
+        elif current_level==2:
+            for y in range(maze_height):
+                for x in range(maze_width):
+                    rect = pygame.Rect(x * CELL_SIZE, y * CELL_SIZE, CELL_SIZE, CELL_SIZE)
+                    image_x = x * CELL_SIZE
+                    image_y = y * CELL_SIZE
+                    if current_maze[y, x] == 1:
+                        screen.blit(metalBlock, (image_x, image_y))
+            if bombDesamorced:
+                screen.blit(door, (level2DoorX * CELL_SIZE, level2DoorY * CELL_SIZE))
+                    
         # Draw the player
         if player.direction == "left":
             screen.blit(spyLeft, (player.x * CELL_SIZE, player.y * CELL_SIZE))
