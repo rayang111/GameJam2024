@@ -24,6 +24,7 @@ codeColor = (255, 255, 0)
 red = (255, 0, 0)  # Red for timer text
 
 # Load assets images
+star = pygame.image.load("data/star.png")  # Image of the star bonus
 brick = pygame.image.load("data/brick.png")
 bonus = pygame.image.load("data/bonus.png")  # Image of the bonus
 checkpoint = pygame.image.load("data/checkpoint.png")  # Image of the checkpoint
@@ -51,7 +52,7 @@ maze_matrix = np.array([
     [1,0,1,1,0,0,0,1,1,1,0,1,0,0,0,1,0,1,0,0,0,0,0,1,0,0,0,1,0,0,0,0,1,0,1,0,0,1,0,1],
     [1,3,1,0,0,1,0,0,0,1,0,1,0,1,0,1,0,1,1,1,1,0,1,1,0,1,0,1,0,1,1,1,1,0,1,1,1,1,0,1],
     [1,0,1,0,1,0,0,0,0,1,0,1,0,1,0,1,0,1,0,0,1,0,1,0,0,1,0,1,0,0,0,0,0,0,1,0,0,1,0,1],
-    [1,0,1,1,1,1,1,1,0,1,0,1,1,1,0,1,0,1,0,1,1,0,1,0,1,1,0,1,1,1,1,1,0,0,1,0,1,1,0,1],
+    [1,4,1,1,1,1,1,1,0,1,0,1,1,1,0,1,0,1,0,1,1,0,1,0,1,1,0,1,1,1,1,1,0,0,1,0,1,1,0,1],
     [1,0,1,0,1,0,0,0,0,1,0,1,0,0,0,1,0,0,0,0,0,0,1,0,1,0,0,0,0,0,0,0,0,1,1,0,1,1,0,1],
     [1,0,1,0,1,1,1,1,1,1,0,1,1,1,1,1,0,1,1,1,1,1,1,1,1,0,1,1,1,0,1,1,1,1,0,0,1,1,1,1],
     [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,1,1,0,0,1],
@@ -128,13 +129,16 @@ class Player:
                 self.x = new_x
                 self.y = new_y
 
-                # Remove bonus or checkpoint if player steps on it
+                # Remove star or bonus when stepped on
                 if maze_matrix[new_y, new_x] == 2:  # Checkpoint
                     maze_matrix[new_y, new_x] = 0
                     return "checkpoint"
                 elif maze_matrix[new_y, new_x] == 3:  # Bonus
                     maze_matrix[new_y, new_x] = 0
-                    return "bonus"
+                    return 'bonus'
+                elif maze_matrix[new_y, new_x] == 4:  # Star
+                    maze_matrix[new_y, new_x] = 0
+                    return 'star'
         return None
 
 # Guard class using A* for pathfinding
@@ -289,8 +293,10 @@ while running:
                     screen.blit(brick, (image_x, image_y))
                 elif maze_matrix[y, x] == 2:  # Show checkpoint item at this location
                     screen.blit(checkpoint, (image_x, image_y))
-                elif maze_matrix[y, x] == 3:  # Show bonus item at this location
+                elif maze_matrix[y, x] == 3:  # Show star or bonus at this location
                     screen.blit(bonus, (image_x, image_y))
+                elif maze_matrix[y, x] == 4:  # Show star at this location
+                    screen.blit(star, (image_x, image_y))
 
         # Draw the player
         if player.direction == "left":
