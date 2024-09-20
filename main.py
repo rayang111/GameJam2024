@@ -182,20 +182,17 @@ codePositionX = 0
 codePositionY = 0
 
 def createCode():
-    global codePositionX, codePositionY
+    global codePositionX, codePositionY, current_level, current_maze
     while(codePositionX == 0 and codePositionY==0):
         new_x = random.randint(33, 39)
         new_y = random.randint(1, 19)
         if current_maze[new_y, new_x]!=1 and current_maze[new_y, new_x]!=3:
             codePositionX = new_x
             codePositionY = new_y
-
-createCode()
-
-# Placing the code in maze 1
-if current_level==1:
-    if codePositionX>1 and codePositionX<maze_width and codePositionY>1 and codePositionY<maze_height: 
-        current_maze[codePositionY,codePositionX] = 15
+    # Placing the code in maze 1
+    if current_level==1:
+        if codePositionX>1 and codePositionX<maze_width and codePositionY>1 and codePositionY<maze_height: 
+            current_maze[codePositionY,codePositionX] = 15
 
 # Chasing
 chasing = False
@@ -365,7 +362,7 @@ def update_current_maze():
     Screen_height = maze_height * CELL_SIZE
 
 def reloadGame():
-    global current_level, current_maze, time_limit, start_ticks, chasing, bombDesamorced, guardsLavel1, guardsLevel2, player_start_y, player
+    global current_level, current_maze, time_limit, start_ticks, chasing, bombDesamorced, guardsLavel1, guardsLevel2, player_start_y, player, codePositionX, codePositionY
     global guards, checkpoint_state, checkpoint_used, clock, running, gameStatus, bonus_active, bonus_start_time, code_gathered, maze_matrix1, maze_matrix2
     
     # Define the maze matrix using NumPy
@@ -420,7 +417,6 @@ def reloadGame():
     update_current_maze()
     time_limit = 2 * 60
     start_ticks = pygame.time.get_ticks() # Reset timer when game starts
-    createCode()
     chasing = False
     bombDesamorced = False
     guardsLavel1 = [
@@ -440,6 +436,9 @@ def reloadGame():
         if current_maze[y, 1] == 0:
             player_start_y = y
             break
+    codePositionX = 0
+    codePositionY = 0
+    createCode()
     player = Player(1, player_start_y, speed=1)
     guards = guardsLavel1
     checkpoint_state = None
