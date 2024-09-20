@@ -37,7 +37,7 @@ win = pygame.image.load("data/menu/win.png")
 
 portail_bottom = pygame.image.load("data/portail/portail_bottom.png") # 13
 portail_left_angle = pygame.image.load("data/portail/portail_left_angle.png") # 6
-portail_left_bootom_angle = pygame.image.load("data/portail/portail_left_bootom_angle.png") # 10
+portail_left_bootom_angle = pygame.image.load("data/portail/portail_left_bottom_angle.png") # 10
 portail_left = pygame.image.load("data/portail/portail_left.png") # 9
 portail_right = pygame.image.load("data/portail/portail_right_.png") # 11
 portail_right_bottom_angle = pygame.image.load("data/portail/portail_right_bottom_angle.png") # 12
@@ -506,7 +506,7 @@ while running:
             elif event.key == pygame.K_RETURN and gameStatus == "start" or event.key == pygame.K_RETURN and gameStatus == "gameover" or event.key == pygame.K_RETURN and gameStatus == "win":
                 gameStatus = "play"
                 reloadGame()
-                print("launched")
+                print("Game launched")
                 sound_begin.play()
                 music.play(loops=-1)
     
@@ -518,18 +518,15 @@ while running:
         if not bonus_active:
             seconds_elapsed = (pygame.time.get_ticks() - start_ticks) // 1000
             time_left = max(0, time_limit - seconds_elapsed)  # Calculate time left
-
             if time_left <= 10:
                 sound_time_is_running.play()
                 music.set_volume(0.2)
             if time_left == 0:
                 sound_time_is_running.stop()
                 music.stop()
+                gameStatus = "gameover"
         
     if gameStatus == "play":
-        # Check if time left
-        if time_left == 0:
-            gamestatus= "gameover"
         # Handle player movement
         keys = pygame.key.get_pressed()
         dx, dy = 0, 0
