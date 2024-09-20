@@ -342,10 +342,10 @@ guardsLavel1 = [
     Guard(28, 12, "left", speed=2)
 ]
 guardsLevel2 = [
-    Guard(11, 3, "left", speed=2),
+    Guard(11, 4, "left", speed=2),
     Guard(6, 19, "left", speed=2),
-    Guard(38, 4, "left", speed=2),
-    Guard(16, 2, "left", speed=2)
+    Guard(38, 3, "left", speed=2),
+    Guard(16, 3, "left", speed=2)
 ]
 
 def update_current_maze():
@@ -426,10 +426,10 @@ def reloadGame():
         Guard(28, 12, "left", speed=2)
     ]
     guardsLevel2 = [
-        Guard(11, 3, "left", speed=2),
+        Guard(11, 4, "left", speed=2),
         Guard(6, 19, "left", speed=2),
-        Guard(38, 4, "left", speed=2),
-        Guard(16, 2, "left", speed=2)
+        Guard(38, 3, "left", speed=2),
+        Guard(16, 3, "left", speed=2)
     ]
     player_start_y = maze_height // 2
     for y in range(player_start_y, maze_height):
