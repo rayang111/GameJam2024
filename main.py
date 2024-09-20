@@ -527,6 +527,9 @@ while running:
                 music.stop()
         
     if gameStatus == "play":
+        # Check if time left
+        if time_left == 0:
+            gamestatus= "gameover"
         # Handle player movement
         keys = pygame.key.get_pressed()
         dx, dy = 0, 0
@@ -626,8 +629,6 @@ while running:
                 guard.move(player, current_maze, chasing)
             if guard.check_collision(player):
                 gameStatus = "gameover"  # Freeze the game if a guard catches the player
-            if time_left == 0:
-                gamestatus= "gameover"
             
         # Deactivate the bonus after 10 seconds
         if bonus_active and pygame.time.get_ticks() - bonus_start_time >= 10000:  # 10 seconds
