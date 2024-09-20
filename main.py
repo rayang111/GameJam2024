@@ -83,6 +83,7 @@ sound_win = pygame.mixer.Sound("sounds/win.wav")
 sound_game_over = pygame.mixer.Sound("sounds/gameover.wav")
 sound_code = pygame.mixer.Sound("sounds/sound_code.wav")
 sound_bomb = pygame.mixer.Sound("sounds/bomb.wav")
+sound_time_travel = pygame.mixer.Sound("sounds/time_travel.wav")
 
 # Screen_width = 1536
 # Screen_height = 640
@@ -185,7 +186,7 @@ def createCode():
     global codePositionX, codePositionY, current_level, current_maze
     while(codePositionX == 0 and codePositionY==0):
         new_x = random.randint(33, 39)
-        new_y = random.randint(1, 19)
+        new_y = random.randint(2, 19)
         if current_maze[new_y, new_x]!=1 and current_maze[new_y, new_x]!=3:
             codePositionX = new_x
             codePositionY = new_y
@@ -507,6 +508,9 @@ while running:
                 sound_begin.play()
                 music.play(loops=-1)
     
+    # print(codePositionX)
+    # print(codePositionY)
+    
     if gameStatus == "play" and not bonus_active:  # Only move and update if the game is not over or pause state
         # Timer countdown
         if not bonus_active:
@@ -571,16 +575,18 @@ while running:
                 gameStatus = "win"
 
         # If the player presses "C" and checkpoint is not yet used, restore the game state
-        if keys[pygame.K_c] and checkpoint_state is not None and not checkpoint_used:
-            player.x, player.y = checkpoint_state["player_pos"]
-            for i, guard in enumerate(guards):
-                guard.x, guard.y = checkpoint_state["guards_pos"][i]
-                guard.path = []
-            if checkpoint_time_left is not None:
-                start_ticks = pygame.time.get_ticks() - (time_limit - checkpoint_time_left) * 1000  # 
-            chasing = checkpoint_state["chasing"]
-            checkpoint_used = True  # Mark the checkpoint as used
-            pygame.time.wait(50)
+        if current_level == 1:
+            if keys[pygame.K_c] and checkpoint_state is not None and not checkpoint_used:
+                sound_time_travel.play()
+                player.x, player.y = checkpoint_state["player_pos"]
+                for i, guard in enumerate(guards):
+                    guard.x, guard.y = checkpoint_state["guards_pos"][i]
+                    guard.path = []
+                if checkpoint_time_left is not None:
+                    start_ticks = pygame.time.get_ticks() - (time_limit - checkpoint_time_left) * 1000  # 
+                chasing = checkpoint_state["chasing"]
+                checkpoint_used = True  # Mark the checkpoint as used
+                pygame.time.wait(50)
         
         guardPos = []
         # Check if the guard see the player and if so, chase the player
