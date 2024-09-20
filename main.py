@@ -343,9 +343,9 @@ guardsLavel1 = [
 ]
 guardsLevel2 = [
     Guard(11, 4, "left", speed=2),
-    Guard(6, 19, "left", speed=2),
+    Guard(6, 18, "left", speed=2),
     Guard(38, 3, "left", speed=2),
-    Guard(16, 3, "left", speed=2)
+    Guard(16, 2, "left", speed=2)
 ]
 
 def update_current_maze():
@@ -363,7 +363,7 @@ def update_current_maze():
 
 def reloadGame():
     global current_level, current_maze, time_limit, start_ticks, chasing, bombDesamorced, guardsLavel1, guardsLevel2, player_start_y, player, codePositionX, codePositionY
-    global guards, checkpoint_state, checkpoint_used, clock, running, gameStatus, bonus_active, bonus_start_time, code_gathered, maze_matrix1, maze_matrix2
+    global guards, checkpoint_state, checkpoint_used, clock, running, gameStatus, bonus_active, bonus_start_time, code_gathered, maze_matrix1, maze_matrix2, gamePaused
     
     # Define the maze matrix using NumPy
     maze_matrix1 = np.array([
@@ -427,9 +427,9 @@ def reloadGame():
     ]
     guardsLevel2 = [
         Guard(11, 4, "left", speed=2),
-        Guard(6, 19, "left", speed=2),
+        Guard(6, 18, "left", speed=2),
         Guard(38, 3, "left", speed=2),
-        Guard(16, 3, "left", speed=2)
+        Guard(16, 2, "left", speed=2)
     ]
     player_start_y = maze_height // 2
     for y in range(player_start_y, maze_height):
@@ -443,6 +443,7 @@ def reloadGame():
     guards = guardsLavel1
     checkpoint_state = None
     checkpoint_used = False # Variable to track if the checkpoint has already been used
+    gamePaused = False
     clock = pygame.time.Clock()
     running = True
     # "start" -> start of the game
@@ -481,6 +482,7 @@ gameStatus = "start"
 bonus_active = False
 bonus_start_time = 0
 code_gathered = False
+gamePaused = False
 
 # level 2 finale door location
 level2DoorX = 38
@@ -560,6 +562,7 @@ while running:
             elif result == "bonus":
                 bonus_active = True
                 bonus_start_time = pygame.time.get_ticks()
+                gamePaused = True
                 sound_bonus.play()
                 
             elif result == "code":
@@ -570,7 +573,8 @@ while running:
                 player.y = player_start_y
                 sound_code.play()
             elif result == "bomb":
-                sound_bomb.play()            
+                chasing = True
+                sound_bomb.play()        
             elif result == "door":
                 gameStatus = "win"
 
@@ -590,26 +594,27 @@ while running:
         
         guardPos = []
         # Check if the guard see the player and if so, chase the player
-        for guard in guards:
-            guardX = guard.x
-            guardY = guard.y
-            direction = guard.direction
-            if (guard.y-player.y)>0 and direction=="up":
-                while(current_maze[guardY,guardX]!=1):
-                    guardY = guardY-1
-                    guardPos.append([guardX,guardY])
-            elif (guard.y-player.y)<0 and direction=="down":
-                while(current_maze[guardY,guardX]!=1):
-                    guardY = guardY+1
-                    guardPos.append([guardX,guardY])
-            elif (guard.x-player.x)>0 and direction=="left":
-                while(current_maze[guardY,guardX]!=1):
-                    guardX = guardX-1
-                    guardPos.append([guardX,guardY])
-            elif (guard.x-player.x)<0 and direction=="right":
-                while(current_maze[guardY,guardX]!=1):
-                    guardX = guardX+1
-                    guardPos.append([guardX,guardY])
+        if not gamePaused:
+            for guard in guards:
+                guardX = guard.x
+                guardY = guard.y
+                direction = guard.direction
+                if (guard.y-player.y)>0 and direction=="up":
+                    while(current_maze[guardY,guardX]!=1):
+                        guardY = guardY-1
+                        guardPos.append([guardX,guardY])
+                elif (guard.y-player.y)<0 and direction=="down":
+                    while(current_maze[guardY,guardX]!=1):
+                        guardY = guardY+1
+                        guardPos.append([guardX,guardY])
+                elif (guard.x-player.x)>0 and direction=="left":
+                    while(current_maze[guardY,guardX]!=1):
+                        guardX = guardX-1
+                        guardPos.append([guardX,guardY])
+                elif (guard.x-player.x)<0 and direction=="right":
+                    while(current_maze[guardY,guardX]!=1):
+                        guardX = guardX+1
+                        guardPos.append([guardX,guardY])
         
         for guardP in guardPos:
             if guardP[0] == player.x and guardP[1] == player.y or guardP[0] == player.x and guardP[1] == player.y:
@@ -621,54 +626,57 @@ while running:
                 guard.move(player, current_maze, chasing)
             if guard.check_collision(player):
                 gameStatus = "gameover"  # Freeze the game if a guard catches the player
-        
+            if time_left == 0:
+                gamestatus= "gameover"
+            
         # Deactivate the bonus after 10 seconds
         if bonus_active and pygame.time.get_ticks() - bonus_start_time >= 10000:  # 10 seconds
             bonus_active = False
             # Resume the timer correctly after bonus ends
             start_ticks += (pygame.time.get_ticks() - bonus_start_time)
+            gamePaused = False
     
     if gameStatus == "play" or gameStatus == "pause" or gameStatus=="gameover":
         # Draw the maze
         screen.fill(backgroundColor)
         for y in range(maze_height):
-                for x in range(maze_width):
-                    rect = pygame.Rect(x * CELL_SIZE, y * CELL_SIZE, CELL_SIZE, CELL_SIZE)
-                    image_x = x * CELL_SIZE
-                    image_y = y * CELL_SIZE
-                    if current_maze[y, x] == 2:  # Afficher l'item checkpoint à cet emplacement
-                        screen.blit(checkpoint, (image_x, image_y))
-                    elif current_maze[y, x] == 3:  # Afficher l'item bonus à cet emplacement
-                        screen.blit(bonus, (image_x, image_y))
-                    # elif current_maze[y, x] == 4:  # Show star at this location
-                    #     screen.blit(star, (image_x, image_y))
-                    elif current_maze[y, x] == 5:  # Afficher le checkpoint sauvegarde
-                        screen.blit(portail, (image_x, image_y))
-                    # Afficher l'arriere plan
-                    elif current_maze[y, x] == 6:
-                        screen.blit(portail_left_angle, (image_x, image_y))
-                    elif current_maze[y, x] == 7:
-                        screen.blit(portail_top, (image_x, image_y))
-                    elif current_maze[y, x] == 8:
-                        screen.blit(portail_right_top_angle, (image_x, image_y))
-                    elif current_maze[y, x] == 9:
-                        screen.blit(portail_left, (image_x, image_y))
-                    elif current_maze[y, x] == 10:
-                        screen.blit(portail_left_bootom_angle, (image_x, image_y))
-                    elif current_maze[y, x] == 11:
-                        screen.blit(portail_right, (image_x, image_y))
-                    elif current_maze[y, x] == 12:
-                        screen.blit(portail_right_bottom_angle, (image_x, image_y))
-                    elif current_maze[y, x] == 13:
-                        screen.blit(portail_bottom, (image_x, image_y))
-                    elif current_maze[y, x] == 14:
-                        screen.blit(portail_center, (image_x, image_y))
-                    elif current_maze[y, x] == 15:  # Afficher l'item code à cet emplacement
-                        screen.blit(code, (image_x, image_y))
-                    elif current_maze[y, x] == 16:  # Afficher l'item de la bombe
-                        screen.blit(bomb, (image_x, image_y))
-                    elif current_maze[y, x] == 17: # Brick sable
-                        screen.blit(sand, (image_x, image_y))
+            for x in range(maze_width):
+                rect = pygame.Rect(x * CELL_SIZE, y * CELL_SIZE, CELL_SIZE, CELL_SIZE)
+                image_x = x * CELL_SIZE
+                image_y = y * CELL_SIZE
+                if current_maze[y, x] == 2:  # Afficher l'item checkpoint à cet emplacement
+                    screen.blit(checkpoint, (image_x, image_y))
+                elif current_maze[y, x] == 3:  # Afficher l'item bonus à cet emplacement
+                    screen.blit(bonus, (image_x, image_y))
+                # elif current_maze[y, x] == 4:  # Show star at this location
+                #     screen.blit(star, (image_x, image_y))
+                elif current_maze[y, x] == 5:  # Afficher le checkpoint sauvegarde
+                    screen.blit(portail, (image_x, image_y))
+                # Afficher l'arriere plan
+                elif current_maze[y, x] == 6:
+                    screen.blit(portail_left_angle, (image_x, image_y))
+                elif current_maze[y, x] == 7:
+                    screen.blit(portail_top, (image_x, image_y))
+                elif current_maze[y, x] == 8:
+                    screen.blit(portail_right_top_angle, (image_x, image_y))
+                elif current_maze[y, x] == 9:
+                    screen.blit(portail_left, (image_x, image_y))
+                elif current_maze[y, x] == 10:
+                    screen.blit(portail_left_bootom_angle, (image_x, image_y))
+                elif current_maze[y, x] == 11:
+                    screen.blit(portail_right, (image_x, image_y))
+                elif current_maze[y, x] == 12:
+                    screen.blit(portail_right_bottom_angle, (image_x, image_y))
+                elif current_maze[y, x] == 13:
+                    screen.blit(portail_bottom, (image_x, image_y))
+                elif current_maze[y, x] == 14:
+                    screen.blit(portail_center, (image_x, image_y))
+                elif current_maze[y, x] == 15:  # Afficher l'item code à cet emplacement
+                    screen.blit(code, (image_x, image_y))
+                elif current_maze[y, x] == 16:  # Afficher l'item de la bombe
+                    screen.blit(bomb, (image_x, image_y))
+                elif current_maze[y, x] == 17: # Brick sable
+                    screen.blit(sand, (image_x, image_y))
                         
                     
         if current_level == 1:
